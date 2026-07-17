@@ -37,7 +37,7 @@ function Locations(): React.JSX.Element {
   const [collapsedBotIds, setCollapsedBotIds] = useState<Set<string>>(
     new Set(),
   );
-  const [visibleBotIds, setVisibleBotIds] = useState<Set<string>>(new Set());
+  const [visibleBotId, setVisibleBotId] = useState<string | null>(null);
 
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPositions, setCapturedPositions] = useState<Point[]>([]);
@@ -114,26 +114,25 @@ function Locations(): React.JSX.Element {
 
   const handleDelete = (botId: string): void => {
     setTriggerBots((prev) => prev.filter((bot) => bot.id !== botId));
-    setVisibleBotIds((prev) => {
-      if (!prev.has(botId)) return prev;
-      const next = new Set(prev);
-      next.delete(botId);
-      return next;
-    });
-    void window.overlay.setBotDots(botId, null);
+    if (visibleBotId === botId) {
+      setVisibleBotId(null);
+      void window.overlay.setBotDots(botId, null);
+    }
   };
 
   const handleToggleView = (bot: TriggerBot): void => {
-    const isVisible = visibleBotIds.has(bot.id);
-    setVisibleBotIds((prev) => {
-      const next = new Set(prev);
-      if (isVisible) next.delete(bot.id);
-      else next.add(bot.id);
-      return next;
-    });
+    const isVisible = visibleBotId === bot.id;
+    if (isVisible) {
+      setVisibleBotId(null);
+      void window.overlay.setBotDots(bot.id, null);
+      return;
+    }
+    const previousBotId = visibleBotId;
+    setVisibleBotId(bot.id);
+    if (previousBotId) void window.overlay.setBotDots(previousBotId, null);
     void window.overlay.setBotDots(
       bot.id,
-      isVisible ? null : bot.positions.map((position) => ({ x: position.x, y: position.y })),
+      bot.positions.map((position) => ({ x: position.x, y: position.y })),
     );
   };
 
@@ -273,17 +272,17 @@ function Locations(): React.JSX.Element {
                             type="button"
                             onClick={() => handleToggleView(bot)}
                             aria-label={
-                              visibleBotIds.has(bot.id)
+                              visibleBotId === bot.id
                                 ? `Hide ${bot.name} on screen`
                                 : `Show ${bot.name} on screen`
                             }
                             className={`inline-flex items-center justify-center rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-40 ${
-                              visibleBotIds.has(bot.id)
+                              visibleBotId === bot.id
                                 ? "bg-emerald-600/15 text-emerald-700 hover:bg-emerald-600/25 dark:text-emerald-400"
                                 : "bg-neutral-200 text-neutral-500 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
                             }`}
                           >
-                            {visibleBotIds.has(bot.id) ? (
+                            {visibleBotId === bot.id ? (
                               <Eye className="h-4 w-4" />
                             ) : (
                               <EyeOff className="h-4 w-4" />
