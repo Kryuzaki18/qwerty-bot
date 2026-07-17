@@ -56,3 +56,15 @@ export const SYSTEM_CHANNELS = {
 export interface SystemApi {
   getInfo(): Promise<SystemInfo>;
 }
+
+export const OVERLAY_CHANNELS = {
+  setBotDots: 'overlay:setBotDots',
+  clearAll: 'overlay:clearAll',
+  dotsUpdated: 'overlay:dotsUpdated',
+} as const;
+
+export interface OverlayApi {
+  setBotDots(botId: string, points: Point[] | null): Promise<void>;
+  clearAll(): Promise<void>;
+  onDotsUpdated(callback: (dots: Point[]) => void): () => void;
+}

@@ -1,0 +1,39 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.overlay-dot {
+  position: fixed;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(52, 211, 153, 1) 0%, rgba(16, 185, 129, 0.7) 55%, rgba(16, 185, 129, 0) 100%);
+  box-shadow: 0 0 14px 4px rgba(16, 185, 129, 0.6);
+  animation: overlay-pulse 1.6s ease-in-out infinite;
+}
+
+.overlay-dot::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+@keyframes overlay-pulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}

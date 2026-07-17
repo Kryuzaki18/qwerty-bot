@@ -2,8 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   CAPTURE_CHANNELS,
   IPC_CHANNELS,
+  OVERLAY_CHANNELS,
   SYSTEM_CHANNELS,
   type CaptureApi,
+  type OverlayApi,
+  type Point,
   type RobotApi,
   type SystemApi,
 } from '../shared/ipc';
@@ -35,6 +38,17 @@ const systemApi: SystemApi = {
   getInfo: () => ipcRenderer.invoke(SYSTEM_CHANNELS.getInfo),
 };
 
+const overlayApi: OverlayApi = {
+  setBotDots: (botId, points) => ipcRenderer.invoke(OVERLAY_CHANNELS.setBotDots, botId, points),
+  clearAll: () => ipcRenderer.invoke(OVERLAY_CHANNELS.clearAll),
+  onDotsUpdated: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, dots: Point[]): void => callback(dots);
+    ipcRenderer.on(OVERLAY_CHANNELS.dotsUpdated, listener);
+    return () => ipcRenderer.removeListener(OVERLAY_CHANNELS.dotsUpdated, listener);
+  },
+};
+
 contextBridge.exposeInMainWorld('robot', robotApi);
 contextBridge.exposeInMainWorld('capture', captureApi);
 contextBridge.exposeInMainWorld('system', systemApi);
+contextBridge.exposeInMainWorld('overlay', overlayApi);

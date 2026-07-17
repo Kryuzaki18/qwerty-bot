@@ -2,7 +2,10 @@ import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { robotClient } from './robotClient';
 import { getSystemInfo } from './systemInfo';
-import { CAPTURE_CHANNELS, IPC_CHANNELS, SYSTEM_CHANNELS } from '../shared/ipc';
+import { CAPTURE_CHANNELS, IPC_CHANNELS, OVERLAY_CHANNELS, SYSTEM_CHANNELS, type Point } from '../shared/ipc';
+
+let overlayWindow: BrowserWindow | null = null;
+const botDots = new Map<string, Point[]>();
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -23,11 +26,64 @@ function createWindow(): void {
     mainWindow.show();
   });
 
+  mainWindow.on('closed', () => {
+    overlayWindow?.destroy();
+    overlayWindow = null;
+  });
+
   if (process.env['ELECTRON_RENDERER_URL']) {
     void mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
     void mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+}
+
+async function ensureOverlayWindow(): Promise<BrowserWindow> {
+  if (overlayWindow && !overlayWindow.isDestroyed()) return overlayWindow;
+
+  const { width, height } = await robotClient.getScreenSize();
+  const win = new BrowserWindow({
+    x: 0,
+    y: 0,
+    width,
+    height,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    movable: false,
+    focusable: false,
+    hasShadow: false,
+    show: false,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+    },
+  });
+  win.setIgnoreMouseEvents(true);
+  win.setAlwaysOnTop(true, 'screen-saver');
+
+  if (process.env['ELECTRON_RENDERER_URL']) {
+    void win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/overlay.html`);
+  } else {
+    void win.loadFile(join(__dirname, '../renderer/overlay.html'));
+  }
+
+  win.on('closed', () => {
+    overlayWindow = null;
+  });
+
+  overlayWindow = win;
+  return win;
+}
+
+function broadcastDots(): void {
+  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  const allDots = Array.from(botDots.values()).flat();
+  overlayWindow.webContents.send(OVERLAY_CHANNELS.dotsUpdated, allDots);
+  if (allDots.length > 0) overlayWindow.showInactive();
+  else overlayWindow.hide();
 }
 
 function registerRobotHandlers(): void {
@@ -39,6 +95,23 @@ function registerRobotHandlers(): void {
 
 function registerSystemHandlers(): void {
   ipcMain.handle(SYSTEM_CHANNELS.getInfo, () => getSystemInfo());
+}
+
+function registerOverlayHandlers(): void {
+  ipcMain.handle(OVERLAY_CHANNELS.setBotDots, async (_event, botId: string, points: Point[] | null) => {
+    if (points && points.length > 0) {
+      botDots.set(botId, points);
+      await ensureOverlayWindow();
+    } else {
+      botDots.delete(botId);
+    }
+    broadcastDots();
+  });
+
+  ipcMain.handle(OVERLAY_CHANNELS.clearAll, () => {
+    botDots.clear();
+    broadcastDots();
+  });
 }
 
 function stopCapture(sender: Electron.WebContents): void {
@@ -69,6 +142,7 @@ void app.whenReady().then(() => {
   registerRobotHandlers();
   registerCaptureHandlers();
   registerSystemHandlers();
+  registerOverlayHandlers();
   createWindow();
 
   app.on('activate', () => {

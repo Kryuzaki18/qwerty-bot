@@ -19,7 +19,10 @@ export default defineConfig({
     },
     build: {
       rollupOptions: {
-        input: resolve('ui/index.html'),
+        input: {
+          index: resolve('ui/index.html'),
+          overlay: resolve('ui/overlay.html'),
+        },
       },
     },
     plugins: [react(), tailwindcss()],
