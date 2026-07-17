@@ -1,4 +1,4 @@
-import { PAGE_ICONS, PAGES } from '../constants/nav';
+import { PAGE_ICONS, PAGES } from '../constants/nav.constant';
 import type { Page } from '../types/nav';
 
 interface SidebarProps {

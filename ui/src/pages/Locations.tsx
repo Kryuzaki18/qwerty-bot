@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import type { Point } from "../../../src/shared/ipc";
-import { DEFAULT_DELAY_MS, DELAY_OPTIONS } from "../constants/locations";
+import { DEFAULT_DELAY_MS, DELAY_OPTIONS } from "../constants/locations.constant";
 
 interface TriggerPosition extends Point {
   delayMs: number;
