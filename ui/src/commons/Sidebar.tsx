@@ -1,0 +1,43 @@
+import { FileText, LayoutDashboard, MapPin, Settings, type LucideIcon } from 'lucide-react';
+import { PAGES, type Page } from '../types/nav';
+
+interface SidebarProps {
+  activePage: Page;
+  onNavigate: (page: Page) => void;
+}
+
+const ICONS: Record<Page, LucideIcon> = {
+  Dashboard: LayoutDashboard,
+  Locations: MapPin,
+  Logs: FileText,
+  Settings: Settings,
+};
+
+function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
+  return (
+    <nav className="flex w-56 flex-col gap-1 border-r border-neutral-800 bg-neutral-950 p-4">
+      <div className="mb-4 px-2 text-lg font-semibold text-neutral-100">qwerty-bot</div>
+      {PAGES.map((page) => {
+        const Icon = ICONS[page];
+        const isActive = page === activePage;
+        return (
+          <button
+            key={page}
+            type="button"
+            onClick={() => onNavigate(page)}
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              isActive
+                ? 'bg-emerald-600/15 text-emerald-400'
+                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'
+            }`}
+          >
+            <Icon className="h-4 w-4" />
+            {page}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+export default Sidebar;
