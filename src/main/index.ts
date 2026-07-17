@@ -5,10 +5,12 @@ import { CAPTURE_CHANNELS, IPC_CHANNELS } from '../shared/ipc';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: 900,
+    width: 1200,
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    resizable: false,
+    maximizable: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
