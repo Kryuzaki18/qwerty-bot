@@ -74,6 +74,7 @@ function Locations(): React.JSX.Element {
       positions: capturedPositions.map((point) => ({ ...point, delayMs: DEFAULT_DELAY_MS })),
     };
     setTriggerBots((prev) => [...prev, newBot]);
+    setCollapsedBotIds((prev) => new Set(prev).add(newBot.id));
     setSetName('');
     setCapturedPositions([]);
   };
