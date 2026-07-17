@@ -61,10 +61,12 @@ export const OVERLAY_CHANNELS = {
   setBotDots: 'overlay:setBotDots',
   clearAll: 'overlay:clearAll',
   dotsUpdated: 'overlay:dotsUpdated',
+  ready: 'overlay:ready',
 } as const;
 
 export interface OverlayApi {
   setBotDots(botId: string, points: Point[] | null): Promise<void>;
   clearAll(): Promise<void>;
   onDotsUpdated(callback: (dots: Point[]) => void): () => void;
+  notifyReady(): void;
 }

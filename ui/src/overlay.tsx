@@ -6,7 +6,11 @@ import './overlay.css';
 function Overlay(): React.JSX.Element {
   const [dots, setDots] = useState<Point[]>([]);
 
-  useEffect(() => window.overlay.onDotsUpdated(setDots), []);
+  useEffect(() => {
+    const unsubscribe = window.overlay.onDotsUpdated(setDots);
+    window.overlay.notifyReady();
+    return unsubscribe;
+  }, []);
 
   return (
     <>

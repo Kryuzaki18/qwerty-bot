@@ -38,6 +38,17 @@ function createWindow(): void {
   }
 }
 
+function waitForOverlayReady(win: BrowserWindow): Promise<void> {
+  return new Promise((resolve) => {
+    const listener = (event: Electron.IpcMainEvent): void => {
+      if (event.sender.id !== win.webContents.id) return;
+      ipcMain.off(OVERLAY_CHANNELS.ready, listener);
+      resolve();
+    };
+    ipcMain.on(OVERLAY_CHANNELS.ready, listener);
+  });
+}
+
 async function ensureOverlayWindow(): Promise<BrowserWindow> {
   if (overlayWindow && !overlayWindow.isDestroyed()) return overlayWindow;
 
@@ -64,6 +75,8 @@ async function ensureOverlayWindow(): Promise<BrowserWindow> {
   win.setIgnoreMouseEvents(true);
   win.setAlwaysOnTop(true, 'screen-saver');
 
+  const ready = waitForOverlayReady(win);
+
   if (process.env['ELECTRON_RENDERER_URL']) {
     void win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/overlay.html`);
   } else {
@@ -75,6 +88,7 @@ async function ensureOverlayWindow(): Promise<BrowserWindow> {
   });
 
   overlayWindow = win;
+  await ready;
   return win;
 }
 

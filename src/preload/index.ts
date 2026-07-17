@@ -46,6 +46,7 @@ const overlayApi: OverlayApi = {
     ipcRenderer.on(OVERLAY_CHANNELS.dotsUpdated, listener);
     return () => ipcRenderer.removeListener(OVERLAY_CHANNELS.dotsUpdated, listener);
   },
+  notifyReady: () => ipcRenderer.send(OVERLAY_CHANNELS.ready),
 };
 
 contextBridge.exposeInMainWorld('robot', robotApi);
