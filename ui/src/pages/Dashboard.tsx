@@ -23,20 +23,20 @@ function Dashboard(): React.JSX.Element {
   return (
     <div className="flex flex-col gap-6">
       {available === false && (
-        <p className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-300">
+        <p className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
           Automation is unavailable on this platform — nut.js failed to load its native binding.
         </p>
       )}
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-neutral-800 p-4">
-          <p className="text-sm text-neutral-400">Screen size</p>
+        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Screen size</p>
           <p className="text-lg font-medium">
             {screenSize ? `${screenSize.width} x ${screenSize.height}` : '—'}
           </p>
         </div>
-        <div className="rounded-lg border border-neutral-800 p-4">
-          <p className="text-sm text-neutral-400">Mouse position</p>
+        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Mouse position</p>
           <p className="text-lg font-medium">{mousePos ? `${mousePos.x}, ${mousePos.y}` : '—'}</p>
         </div>
       </section>
@@ -46,7 +46,7 @@ function Dashboard(): React.JSX.Element {
           type="button"
           onClick={() => void refresh()}
           disabled={!available}
-          className="inline-flex items-center gap-2 rounded-md bg-neutral-800 px-3 py-2 text-sm font-medium hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex items-center gap-2 rounded-md bg-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:hover:bg-neutral-700"
         >
           <RefreshCw className="h-4 w-4" />
           Refresh
@@ -55,7 +55,7 @@ function Dashboard(): React.JSX.Element {
           type="button"
           onClick={() => void (available && window.robot.moveMouse(200, 200))}
           disabled={!available}
-          className="inline-flex items-center gap-2 rounded-md bg-neutral-800 px-3 py-2 text-sm font-medium hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex items-center gap-2 rounded-md bg-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:hover:bg-neutral-700"
         >
           <MousePointer2 className="h-4 w-4" />
           Move mouse to 200, 200
@@ -67,7 +67,7 @@ function Dashboard(): React.JSX.Element {
           value={typedText}
           onChange={(event) => setTypedText(event.target.value)}
           placeholder="Text to type"
-          className="rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+          className="rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-900"
         />
         <button
           type="button"

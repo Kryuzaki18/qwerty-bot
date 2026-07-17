@@ -105,18 +105,18 @@ function Locations(): React.JSX.Element {
   return (
     <div className="grid h-full grid-cols-2 gap-6">
       <section className="flex min-h-0 flex-col gap-3">
-        <h2 className="text-sm font-semibold text-neutral-400">Trigger Bots</h2>
+        <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Trigger Bots</h2>
         <div className="flex-1 overflow-y-auto">
           {triggerBots.length === 0 ? (
-            <p className="text-sm text-neutral-400">No trigger sets saved yet.</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">No trigger sets saved yet.</p>
           ) : (
             <ul className="flex flex-col gap-3">
               {triggerBots.map((bot) => (
-                <li key={bot.id} className="rounded-lg border border-neutral-800 p-4">
+                <li key={bot.id} className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-neutral-100">{bot.name}</p>
-                      <p className="text-xs text-neutral-400">{bot.positions.length} position(s)</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{bot.name}</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">{bot.positions.length} position(s)</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -133,7 +133,7 @@ function Locations(): React.JSX.Element {
                         onClick={() => handleDelete(bot.id)}
                         disabled={isRunning}
                         aria-label={`Delete ${bot.name}`}
-                        className="inline-flex items-center justify-center rounded-md bg-neutral-800 p-2 text-neutral-400 hover:bg-red-600/20 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-red-600/20 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -144,11 +144,11 @@ function Locations(): React.JSX.Element {
                     {bot.positions.map((position, index) => (
                       <li
                         key={`${bot.id}-${index}`}
-                        className="flex items-center justify-between gap-2 rounded-md bg-neutral-900 px-3 py-2"
+                        className="flex items-center justify-between gap-2 rounded-md bg-neutral-100 px-3 py-2 dark:bg-neutral-900"
                       >
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-3.5 w-3.5 text-emerald-400" />
-                          <p className="text-xs text-neutral-300">
+                          <MapPin className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <p className="text-xs text-neutral-600 dark:text-neutral-300">
                             #{index + 1} — {position.x}, {position.y}
                           </p>
                         </div>
@@ -158,7 +158,7 @@ function Locations(): React.JSX.Element {
                             updatePositionDelay(bot.id, index, Number(event.target.value))
                           }
                           disabled={isRunning}
-                          className="rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 text-xs text-neutral-100 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
                         >
                           {DELAY_OPTIONS.map((option) => (
                             <option key={option.value} value={option.value}>
@@ -178,12 +178,12 @@ function Locations(): React.JSX.Element {
 
       <section className="flex min-h-0 flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-400">Trigger Set Positions</h2>
+          <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Trigger Set Positions</h2>
           <button
             type="button"
             onClick={handleAddSets}
             disabled={isCapturing}
-            className="inline-flex items-center gap-2 rounded-md bg-neutral-800 px-3 py-2 text-sm font-medium hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-md bg-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:hover:bg-neutral-700"
           >
             <Plus className="h-4 w-4" />
             Add sets
@@ -191,23 +191,23 @@ function Locations(): React.JSX.Element {
         </div>
 
         {isCapturing && (
-          <p className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-300">
+          <p className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-300">
             Capturing — press Space anywhere on screen to add the mouse position, Escape to stop.
           </p>
         )}
 
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
           {capturedPositions.length === 0 && !isCapturing ? (
-            <p className="text-sm text-neutral-400">No positions captured yet.</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">No positions captured yet.</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {capturedPositions.map((point, index) => (
                 <li
                   key={`${index}-${point.x}-${point.y}`}
-                  className="flex items-center gap-3 rounded-lg border border-neutral-800 p-3"
+                  className="flex items-center gap-3 rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
                 >
-                  <MapPin className="h-4 w-4 text-emerald-400" />
-                  <p className="text-sm font-medium text-neutral-100">
+                  <MapPin className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     #{index + 1} — {point.x}, {point.y}
                   </p>
                 </li>
@@ -216,12 +216,12 @@ function Locations(): React.JSX.Element {
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 border-t border-neutral-800 pt-4">
+        <div className="flex shrink-0 items-center gap-2 border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <input
             value={setName}
             onChange={(event) => setSetName(event.target.value)}
             placeholder="Trigger set name"
-            className="flex-1 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+            className="flex-1 rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-900"
           />
           <button
             type="button"

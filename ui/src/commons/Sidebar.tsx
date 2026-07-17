@@ -15,8 +15,8 @@ const ICONS: Record<Page, LucideIcon> = {
 
 function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
   return (
-    <nav className="flex w-56 flex-col gap-1 border-r border-neutral-800 bg-neutral-950 p-4">
-      <div className="mb-4 px-2 text-lg font-semibold text-neutral-100">qwerty-bot</div>
+    <nav className="flex w-56 flex-col gap-1 border-r border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+      <div className="mb-4 px-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">qwerty-bot</div>
       {PAGES.map((page) => {
         const Icon = ICONS[page];
         const isActive = page === activePage;
@@ -27,8 +27,8 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
             onClick={() => onNavigate(page)}
             className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               isActive
-                ? 'bg-emerald-600/15 text-emerald-400'
-                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100'
+                ? 'bg-emerald-600/15 text-emerald-700 dark:text-emerald-400'
+                : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
             }`}
           >
             <Icon className="h-4 w-4" />
