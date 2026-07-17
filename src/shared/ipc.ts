@@ -39,3 +39,24 @@ export interface CaptureApi {
   onPointCaptured(callback: (point: Point) => void): () => void;
   onStopped(callback: () => void): () => void;
 }
+
+export interface SystemInfo {
+  platform: string;
+  osVersion: string;
+  arch: string;
+  hostname: string;
+  cpuModel: string;
+  cpuCores: number;
+  totalMemory: number;
+  freeMemory: number;
+  gpu: string;
+  uptime: number;
+}
+
+export const SYSTEM_CHANNELS = {
+  getInfo: 'system:getInfo',
+} as const;
+
+export interface SystemApi {
+  getInfo(): Promise<SystemInfo>;
+}

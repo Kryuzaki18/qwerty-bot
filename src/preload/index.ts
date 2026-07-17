@@ -1,5 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { CAPTURE_CHANNELS, IPC_CHANNELS, type CaptureApi, type RobotApi } from '../shared/ipc';
+import {
+  CAPTURE_CHANNELS,
+  IPC_CHANNELS,
+  SYSTEM_CHANNELS,
+  type CaptureApi,
+  type RobotApi,
+  type SystemApi,
+} from '../shared/ipc';
 
 const robotApi: RobotApi = {
   isAvailable: () => ipcRenderer.invoke(IPC_CHANNELS.isAvailable),
@@ -26,5 +33,10 @@ const captureApi: CaptureApi = {
   },
 };
 
+const systemApi: SystemApi = {
+  getInfo: () => ipcRenderer.invoke(SYSTEM_CHANNELS.getInfo),
+};
+
 contextBridge.exposeInMainWorld('robot', robotApi);
 contextBridge.exposeInMainWorld('capture', captureApi);
+contextBridge.exposeInMainWorld('system', systemApi);

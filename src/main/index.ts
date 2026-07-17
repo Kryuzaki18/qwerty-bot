@@ -1,7 +1,8 @@
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { robotClient } from './robotClient';
-import { CAPTURE_CHANNELS, IPC_CHANNELS } from '../shared/ipc';
+import { getSystemInfo } from './systemInfo';
+import { CAPTURE_CHANNELS, IPC_CHANNELS, SYSTEM_CHANNELS } from '../shared/ipc';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -37,6 +38,10 @@ function registerRobotHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.typeString, (_event, text: string) => robotClient.typeString(text));
 }
 
+function registerSystemHandlers(): void {
+  ipcMain.handle(SYSTEM_CHANNELS.getInfo, () => getSystemInfo());
+}
+
 function stopCapture(sender: Electron.WebContents): void {
   globalShortcut.unregister('Space');
   globalShortcut.unregister('Escape');
@@ -64,6 +69,7 @@ function registerCaptureHandlers(): void {
 void app.whenReady().then(() => {
   registerRobotHandlers();
   registerCaptureHandlers();
+  registerSystemHandlers();
   createWindow();
 
   app.on('activate', () => {
