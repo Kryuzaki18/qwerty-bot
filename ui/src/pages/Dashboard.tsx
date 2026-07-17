@@ -12,6 +12,24 @@ function formatUptime(seconds: number): string {
   return [days && `${days}d`, hours && `${hours}h`, `${minutes}m`].filter(Boolean).join(' ');
 }
 
+interface StatCardProps {
+  label: string;
+  value: string;
+  hint?: string;
+}
+
+function StatCard({ label, value, hint }: StatCardProps): React.JSX.Element {
+  return (
+    <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">{label}</p>
+      <p className="text-lg font-medium">{value}</p>
+      {hint !== undefined && (
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">{hint}</p>
+      )}
+    </div>
+  );
+}
+
 function Dashboard(): React.JSX.Element {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [screenSize, setScreenSize] = useState<ScreenSize | null>(null);
@@ -30,6 +48,33 @@ function Dashboard(): React.JSX.Element {
 
   const usedMemory = systemInfo ? systemInfo.totalMemory - systemInfo.freeMemory : null;
 
+  const stats: StatCardProps[] = [
+    {
+      label: 'Screen size',
+      value: screenSize ? `${screenSize.width} x ${screenSize.height}` : '—',
+    },
+    {
+      label: 'CPU',
+      value: systemInfo ? systemInfo.cpuModel : '—',
+      hint: systemInfo ? `${systemInfo.cpuCores} core(s)` : '',
+    },
+    {
+      label: 'RAM',
+      value:
+        systemInfo && usedMemory !== null
+          ? `${formatBytes(usedMemory)} / ${formatBytes(systemInfo.totalMemory)}`
+          : '—',
+    },
+    { label: 'GPU', value: systemInfo ? systemInfo.gpu : '—' },
+    {
+      label: 'OS',
+      value: systemInfo ? `${systemInfo.platform} ${systemInfo.osVersion}` : '—',
+      hint: systemInfo?.arch ?? '',
+    },
+    { label: 'Hostname', value: systemInfo ? systemInfo.hostname : '—' },
+    { label: 'Uptime', value: systemInfo ? formatUptime(systemInfo.uptime) : '—' },
+  ];
+
   return (
     <div className="flex flex-col gap-6">
       {available === false && (
@@ -39,46 +84,9 @@ function Dashboard(): React.JSX.Element {
       )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">Screen size</p>
-          <p className="text-lg font-medium">
-            {screenSize ? `${screenSize.width} x ${screenSize.height}` : '—'}
-          </p>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">CPU</p>
-          <p className="text-lg font-medium">{systemInfo ? systemInfo.cpuModel : '—'}</p>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            {systemInfo ? `${systemInfo.cpuCores} core(s)` : ''}
-          </p>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">RAM</p>
-          <p className="text-lg font-medium">
-            {systemInfo && usedMemory !== null
-              ? `${formatBytes(usedMemory)} / ${formatBytes(systemInfo.totalMemory)}`
-              : '—'}
-          </p>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">GPU</p>
-          <p className="text-lg font-medium">{systemInfo ? systemInfo.gpu : '—'}</p>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">OS</p>
-          <p className="text-lg font-medium">
-            {systemInfo ? `${systemInfo.platform} ${systemInfo.osVersion}` : '—'}
-          </p>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">{systemInfo?.arch ?? ''}</p>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">Hostname</p>
-          <p className="text-lg font-medium">{systemInfo ? systemInfo.hostname : '—'}</p>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">Uptime</p>
-          <p className="text-lg font-medium">{systemInfo ? formatUptime(systemInfo.uptime) : '—'}</p>
-        </div>
+        {stats.map((stat) => (
+          <StatCard key={stat.label} {...stat} />
+        ))}
       </section>
     </div>
   );

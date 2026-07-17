@@ -14,6 +14,12 @@ import {
 } from "lucide-react";
 import type { Point } from "../../../src/shared/ipc";
 import { DEFAULT_DELAY_MS, DELAY_OPTIONS } from "../constants/locations.constant";
+import {
+  ICON_BUTTON,
+  ICON_BUTTON_DANGER_HOVER,
+  ICON_BUTTON_DISABLED,
+  ICON_BUTTON_NEUTRAL,
+} from "../constants/button.constant";
 
 interface TriggerPosition extends Point {
   delayMs: number;
@@ -261,7 +267,7 @@ function Locations(): React.JSX.Element {
                             type="button"
                             onClick={handleCancelRename}
                             aria-label="Cancel rename"
-                            className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                            className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL}`}
                           >
                             <X className="h-4 w-4" />
                           </button>
@@ -271,15 +277,16 @@ function Locations(): React.JSX.Element {
                           <button
                             type="button"
                             onClick={() => handleToggleView(bot)}
+                            disabled={isRunning}
                             aria-label={
                               visibleBotId === bot.id
                                 ? `Hide ${bot.name} on screen`
                                 : `Show ${bot.name} on screen`
                             }
-                            className={`inline-flex items-center justify-center rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+                            className={`${ICON_BUTTON} ${ICON_BUTTON_DISABLED} ${
                               visibleBotId === bot.id
                                 ? "bg-emerald-600/15 text-emerald-700 hover:bg-emerald-600/25 dark:text-emerald-400"
-                                : "bg-neutral-200 text-neutral-500 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                                : ICON_BUTTON_NEUTRAL
                             }`}
                           >
                             {visibleBotId === bot.id ? (
@@ -292,7 +299,7 @@ function Locations(): React.JSX.Element {
                             type="button"
                             onClick={() => void handleTrigger(bot)}
                             disabled={isRunning}
-                            className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
+                            className={`inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 ${ICON_BUTTON_DISABLED}`}
                           >
                             <Play className="h-4 w-4" />
                             {runningBotId === bot.id ? "Running…" : "Trigger"}
@@ -302,7 +309,7 @@ function Locations(): React.JSX.Element {
                             onClick={() => handleStartRename(bot)}
                             disabled={isRunning}
                             aria-label={`Rename ${bot.name}`}
-                            className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                            className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
@@ -311,7 +318,7 @@ function Locations(): React.JSX.Element {
                             onClick={() => handleDelete(bot.id)}
                             disabled={isRunning}
                             aria-label={`Delete ${bot.name}`}
-                            className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-red-600/20 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-red-400"
+                            className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER} ${ICON_BUTTON_DISABLED}`}
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -419,7 +426,7 @@ function Locations(): React.JSX.Element {
                     type="button"
                     onClick={() => handleDeleteCapturedPosition(index)}
                     aria-label={`Delete position ${index + 1}`}
-                    className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-red-600/20 hover:text-red-600 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-red-400"
+                    className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

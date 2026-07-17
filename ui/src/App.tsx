@@ -2,18 +2,8 @@ import { useEffect, useState } from 'react';
 import Header from './commons/Header';
 import Sidebar from './commons/Sidebar';
 import type { Page } from './types/nav';
-import Dashboard from './pages/Dashboard';
-import Locations from './pages/Locations';
-import Logs from './pages/Logs';
-import Settings from './pages/Settings';
+import { PAGE_COMPONENTS } from './constants/nav.constant';
 import { useThemeStore } from './store/useThemeStore';
-
-const PAGE_COMPONENTS: Record<Page, () => React.JSX.Element> = {
-  Dashboard,
-  Locations,
-  Logs,
-  Settings,
-};
 
 function App(): React.JSX.Element {
   const [activePage, setActivePage] = useState<Page>('Dashboard');
