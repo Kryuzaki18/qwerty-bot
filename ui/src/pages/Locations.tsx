@@ -1,6 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Check, ChevronDown, MapPin, Pencil, Play, Plus, Save, Trash2, X } from 'lucide-react';
-import type { Point } from '../../../src/shared/ipc';
+import { useEffect, useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  MapPin,
+  Pencil,
+  Play,
+  Plus,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
+import type { Point } from "../../../src/shared/ipc";
+import { DEFAULT_DELAY_MS, DELAY_OPTIONS } from "../constants/locations";
 
 interface TriggerPosition extends Point {
   delayMs: number;
@@ -12,17 +23,6 @@ interface TriggerBot {
   positions: TriggerPosition[];
 }
 
-const DELAY_OPTIONS: Array<{ label: string; value: number }> = [
-  { label: '100ms', value: 100 },
-  { label: '500ms', value: 500 },
-  { label: '1secs', value: 1000 },
-  { label: '2secs', value: 2000 },
-  { label: '3secs', value: 3000 },
-  { label: '5secs', value: 5000 },
-];
-
-const DEFAULT_DELAY_MS = 500;
-
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -31,12 +31,14 @@ function Locations(): React.JSX.Element {
   const [triggerBots, setTriggerBots] = useState<TriggerBot[]>([]);
   const [runningBotId, setRunningBotId] = useState<string | null>(null);
   const [editingBotId, setEditingBotId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState('');
-  const [collapsedBotIds, setCollapsedBotIds] = useState<Set<string>>(new Set());
+  const [editingName, setEditingName] = useState("");
+  const [collapsedBotIds, setCollapsedBotIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPositions, setCapturedPositions] = useState<Point[]>([]);
-  const [setName, setSetName] = useState('');
+  const [setName, setSetName] = useState("");
 
   useEffect(() => {
     const unsubscribePoint = window.capture.onPointCaptured((point) => {
@@ -71,19 +73,31 @@ function Locations(): React.JSX.Element {
     const newBot: TriggerBot = {
       id: `${trimmedName}-${Date.now()}`,
       name: trimmedName,
-      positions: capturedPositions.map((point) => ({ ...point, delayMs: DEFAULT_DELAY_MS })),
+      positions: capturedPositions.map((point) => ({
+        ...point,
+        delayMs: DEFAULT_DELAY_MS,
+      })),
     };
     setTriggerBots((prev) => [...prev, newBot]);
     setCollapsedBotIds((prev) => new Set(prev).add(newBot.id));
-    setSetName('');
+    setSetName("");
     setCapturedPositions([]);
   };
 
-  const updatePositionDelay = (botId: string, positionIndex: number, delayMs: number): void => {
+  const updatePositionDelay = (
+    botId: string,
+    positionIndex: number,
+    delayMs: number,
+  ): void => {
     setTriggerBots((prev) =>
       prev.map((bot) =>
         bot.id === botId
-          ? { ...bot, positions: bot.positions.map((p, i) => (i === positionIndex ? { ...p, delayMs } : p)) }
+          ? {
+              ...bot,
+              positions: bot.positions.map((p, i) =>
+                i === positionIndex ? { ...p, delayMs } : p,
+              ),
+            }
           : bot,
       ),
     );
@@ -100,7 +114,7 @@ function Locations(): React.JSX.Element {
 
   const handleCancelRename = (): void => {
     setEditingBotId(null);
-    setEditingName('');
+    setEditingName("");
   };
 
   const handleConfirmRename = (): void => {
@@ -110,7 +124,11 @@ function Locations(): React.JSX.Element {
       return;
     }
     const botId = editingBotId;
-    setTriggerBots((prev) => prev.map((bot) => (bot.id === botId ? { ...bot, name: trimmedName } : bot)));
+    setTriggerBots((prev) =>
+      prev.map((bot) =>
+        bot.id === botId ? { ...bot, name: trimmedName } : bot,
+      ),
+    );
     handleCancelRename();
   };
 
@@ -146,23 +164,34 @@ function Locations(): React.JSX.Element {
   return (
     <div className="grid h-full grid-cols-2 gap-6">
       <section className="flex min-h-0 flex-col gap-3">
-        <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Trigger Bots</h2>
+        <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+          Trigger Bots
+        </h2>
         <div className="flex-1 overflow-y-auto">
           {triggerBots.length === 0 ? (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">No trigger sets saved yet.</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              No trigger sets saved yet.
+            </p>
           ) : (
             <ul className="flex flex-col gap-3">
               {triggerBots.map((bot) => (
-                <li key={bot.id} className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+                <li
+                  key={bot.id}
+                  className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800"
+                >
                   <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => handleToggleCollapse(bot.id)}
-                      aria-label={collapsedBotIds.has(bot.id) ? `Expand ${bot.name}` : `Collapse ${bot.name}`}
+                      aria-label={
+                        collapsedBotIds.has(bot.id)
+                          ? `Expand ${bot.name}`
+                          : `Collapse ${bot.name}`
+                      }
                       className="inline-flex shrink-0 items-center justify-center rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                     >
                       <ChevronDown
-                        className={`h-4 w-4 transition-transform ${collapsedBotIds.has(bot.id) ? '-rotate-90' : ''}`}
+                        className={`h-4 w-4 transition-transform ${collapsedBotIds.has(bot.id) ? "-rotate-90" : ""}`}
                       />
                     </button>
                     <div className="min-w-0 flex-1">
@@ -170,10 +199,12 @@ function Locations(): React.JSX.Element {
                         <input
                           autoFocus
                           value={editingName}
-                          onChange={(event) => setEditingName(event.target.value)}
+                          onChange={(event) =>
+                            setEditingName(event.target.value)
+                          }
                           onKeyDown={(event) => {
-                            if (event.key === 'Enter') handleConfirmRename();
-                            if (event.key === 'Escape') handleCancelRename();
+                            if (event.key === "Enter") handleConfirmRename();
+                            if (event.key === "Escape") handleCancelRename();
                           }}
                           className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm text-neutral-900 outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
                         />
@@ -182,7 +213,9 @@ function Locations(): React.JSX.Element {
                           {bot.name}
                         </p>
                       )}
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">{bot.positions.length} position(s)</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {bot.positions.length} position(s)
+                      </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {editingBotId === bot.id ? (
@@ -213,7 +246,7 @@ function Locations(): React.JSX.Element {
                             className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             <Play className="h-4 w-4" />
-                            {runningBotId === bot.id ? 'Running…' : 'Trigger'}
+                            {runningBotId === bot.id ? "Running…" : "Trigger"}
                           </button>
                           <button
                             type="button"
@@ -254,7 +287,11 @@ function Locations(): React.JSX.Element {
                           <select
                             value={position.delayMs}
                             onChange={(event) =>
-                              updatePositionDelay(bot.id, index, Number(event.target.value))
+                              updatePositionDelay(
+                                bot.id,
+                                index,
+                                Number(event.target.value),
+                              )
                             }
                             disabled={isRunning}
                             className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
@@ -278,7 +315,9 @@ function Locations(): React.JSX.Element {
 
       <section className="flex min-h-0 flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Trigger Set Positions</h2>
+          <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+            Trigger Set Positions
+          </h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -304,13 +343,16 @@ function Locations(): React.JSX.Element {
 
         {isCapturing && (
           <p className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-300">
-            Capturing — press Space anywhere on screen to add the mouse position, Escape to stop.
+            Capturing — press Space anywhere on screen to add the mouse
+            position, Escape to stop.
           </p>
         )}
 
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
           {capturedPositions.length === 0 && !isCapturing ? (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">No positions captured yet.</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              No positions captured yet.
+            </p>
           ) : (
             <ul className="flex flex-col gap-2">
               {capturedPositions.map((point, index) => (

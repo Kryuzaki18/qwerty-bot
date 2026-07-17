@@ -1,3 +1,3 @@
-export const PAGES = ['Dashboard', 'Locations', 'Logs', 'Settings'] as const;
+import { PAGES } from '../constants/nav';
 
 export type Page = (typeof PAGES)[number];

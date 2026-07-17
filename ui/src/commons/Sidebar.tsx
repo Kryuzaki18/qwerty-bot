@@ -1,24 +1,17 @@
-import { FileText, LayoutDashboard, MapPin, Settings, type LucideIcon } from 'lucide-react';
-import { PAGES, type Page } from '../types/nav';
+import { PAGE_ICONS, PAGES } from '../constants/nav';
+import type { Page } from '../types/nav';
 
 interface SidebarProps {
   activePage: Page;
   onNavigate: (page: Page) => void;
 }
 
-const ICONS: Record<Page, LucideIcon> = {
-  Dashboard: LayoutDashboard,
-  Locations: MapPin,
-  Logs: FileText,
-  Settings: Settings,
-};
-
 function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
   return (
     <nav className="flex w-56 flex-col gap-1 border-r border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="mb-4 px-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">qwerty-bot</div>
       {PAGES.map((page) => {
-        const Icon = ICONS[page];
+        const Icon = PAGE_ICONS[page];
         const isActive = page === activePage;
         return (
           <button
