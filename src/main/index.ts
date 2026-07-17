@@ -12,6 +12,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     resizable: false,
     maximizable: false,
+    icon: join(__dirname, '../../ui/public/qwerty-logo.png'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

@@ -9,7 +9,10 @@ interface SidebarProps {
 function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
   return (
     <nav className="flex w-56 flex-col gap-1 border-r border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-      <div className="mb-4 px-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">qwerty-bot</div>
+      <div className="mb-4 flex items-center gap-2 px-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+        <img src="/qwerty-logo.png" alt="qwerty-bot logo" className="h-6 w-6 rounded-md" />
+        qwerty-bot
+      </div>
       {PAGES.map((page) => {
         const Icon = PAGE_ICONS[page];
         const isActive = page === activePage;
