@@ -84,13 +84,15 @@ function Locations(): React.JSX.Element {
     setTriggerBots((prev) => prev.filter((bot) => bot.id !== botId));
   };
 
+  const handleDeleteCapturedPosition = (index: number): void => {
+    setCapturedPositions((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleTrigger = async (bot: TriggerBot): Promise<void> => {
     setRunningBotId(bot.id);
     try {
       for (const position of bot.positions) {
         await window.robot.moveMouse(position.x, position.y);
-        // The OS cursor can take a moment to settle after moveMouse resolves;
-        // clicking immediately risks hitting the pre-move position.
         await sleep(50);
         await window.robot.clickMouse();
         await sleep(position.delayMs);
@@ -204,12 +206,22 @@ function Locations(): React.JSX.Element {
               {capturedPositions.map((point, index) => (
                 <li
                   key={`${index}-${point.x}-${point.y}`}
-                  className="flex items-center gap-3 rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
                 >
-                  <MapPin className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                    #{index + 1} — {point.x}, {point.y}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      #{index + 1} — {point.x}, {point.y}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCapturedPosition(index)}
+                    aria-label={`Delete position ${index + 1}`}
+                    className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-red-600/20 hover:text-red-600 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </li>
               ))}
             </ul>
