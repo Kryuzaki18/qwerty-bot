@@ -11,10 +11,8 @@ import {
 const robotApi: RobotApi = {
   isAvailable: () => ipcRenderer.invoke(IPC_CHANNELS.isAvailable),
   getScreenSize: () => ipcRenderer.invoke(IPC_CHANNELS.getScreenSize),
-  getMousePos: () => ipcRenderer.invoke(IPC_CHANNELS.getMousePos),
   moveMouse: (x, y) => ipcRenderer.invoke(IPC_CHANNELS.moveMouse, x, y),
   clickMouse: () => ipcRenderer.invoke(IPC_CHANNELS.clickMouse),
-  typeString: (text) => ipcRenderer.invoke(IPC_CHANNELS.typeString, text),
 };
 
 const captureApi: CaptureApi = {

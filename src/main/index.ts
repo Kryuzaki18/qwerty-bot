@@ -32,10 +32,8 @@ function createWindow(): void {
 function registerRobotHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.isAvailable, () => robotClient.available);
   ipcMain.handle(IPC_CHANNELS.getScreenSize, () => robotClient.getScreenSize());
-  ipcMain.handle(IPC_CHANNELS.getMousePos, () => robotClient.getMousePos());
   ipcMain.handle(IPC_CHANNELS.moveMouse, (_event, x: number, y: number) => robotClient.moveMouse(x, y));
   ipcMain.handle(IPC_CHANNELS.clickMouse, () => robotClient.clickMouse());
-  ipcMain.handle(IPC_CHANNELS.typeString, (_event, text: string) => robotClient.typeString(text));
 }
 
 function registerSystemHandlers(): void {

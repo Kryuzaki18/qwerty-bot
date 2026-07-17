@@ -6,7 +6,6 @@ export interface RobotClient {
   moveMouse(x: number, y: number): Promise<void>;
   getMousePos(): Promise<Point>;
   clickMouse(): Promise<void>;
-  typeString(text: string): Promise<void>;
   getScreenSize(): Promise<ScreenSize>;
 }
 
@@ -45,9 +44,6 @@ export const robotClient: RobotClient = {
   async clickMouse() {
     const nutjs = requireNut();
     await nutjs.mouse.click(nutjs.Button.LEFT);
-  },
-  async typeString(text) {
-    await requireNut().keyboard.type(text);
   },
   async getScreenSize() {
     const nutjs = requireNut();
