@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapPin, Play, Plus, Save, Trash2 } from 'lucide-react';
+import { MapPin, Play, Plus, Save, Trash2, X } from 'lucide-react';
 import type { Point } from '../../../src/shared/ipc';
 
 interface TriggerPosition extends Point {
@@ -55,6 +55,11 @@ function Locations(): React.JSX.Element {
     setCapturedPositions([]);
     setIsCapturing(true);
     void window.capture.start();
+  };
+
+  const handleCancelCapture = (): void => {
+    void window.capture.stop();
+    setCapturedPositions([]);
   };
 
   const handleSave = (): void => {
@@ -181,15 +186,27 @@ function Locations(): React.JSX.Element {
       <section className="flex min-h-0 flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Trigger Set Positions</h2>
-          <button
-            type="button"
-            onClick={handleAddSets}
-            disabled={isCapturing}
-            className="inline-flex items-center gap-2 rounded-md bg-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-          >
-            <Plus className="h-4 w-4" />
-            Add sets
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAddSets}
+              disabled={isCapturing}
+              className="inline-flex items-center gap-2 rounded-md bg-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            >
+              <Plus className="h-4 w-4" />
+              Add sets
+            </button>
+            {isCapturing && (
+              <button
+                type="button"
+                onClick={handleCancelCapture}
+                className="inline-flex items-center gap-2 rounded-md bg-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-red-600/20 hover:text-red-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-red-400"
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
 
         {isCapturing && (
