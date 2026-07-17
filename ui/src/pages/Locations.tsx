@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapPin, Play, Plus, Save, Trash2, X } from 'lucide-react';
+import { Check, MapPin, Pencil, Play, Plus, Save, Trash2, X } from 'lucide-react';
 import type { Point } from '../../../src/shared/ipc';
 
 interface TriggerPosition extends Point {
@@ -30,6 +30,8 @@ function sleep(ms: number): Promise<void> {
 function Locations(): React.JSX.Element {
   const [triggerBots, setTriggerBots] = useState<TriggerBot[]>([]);
   const [runningBotId, setRunningBotId] = useState<string | null>(null);
+  const [editingBotId, setEditingBotId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPositions, setCapturedPositions] = useState<Point[]>([]);
@@ -89,6 +91,27 @@ function Locations(): React.JSX.Element {
     setTriggerBots((prev) => prev.filter((bot) => bot.id !== botId));
   };
 
+  const handleStartRename = (bot: TriggerBot): void => {
+    setEditingBotId(bot.id);
+    setEditingName(bot.name);
+  };
+
+  const handleCancelRename = (): void => {
+    setEditingBotId(null);
+    setEditingName('');
+  };
+
+  const handleConfirmRename = (): void => {
+    const trimmedName = editingName.trim();
+    if (!trimmedName || !editingBotId) {
+      handleCancelRename();
+      return;
+    }
+    const botId = editingBotId;
+    setTriggerBots((prev) => prev.map((bot) => (bot.id === botId ? { ...bot, name: trimmedName } : bot)));
+    handleCancelRename();
+  };
+
   const handleDeleteCapturedPosition = (index: number): void => {
     setCapturedPositions((prev) => prev.filter((_, i) => i !== index));
   };
@@ -120,30 +143,77 @@ function Locations(): React.JSX.Element {
             <ul className="flex flex-col gap-3">
               {triggerBots.map((bot) => (
                 <li key={bot.id} className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{bot.name}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      {editingBotId === bot.id ? (
+                        <input
+                          autoFocus
+                          value={editingName}
+                          onChange={(event) => setEditingName(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') handleConfirmRename();
+                            if (event.key === 'Escape') handleCancelRename();
+                          }}
+                          className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm text-neutral-900 outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+                        />
+                      ) : (
+                        <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                          {bot.name}
+                        </p>
+                      )}
                       <p className="text-xs text-neutral-500 dark:text-neutral-400">{bot.positions.length} position(s)</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void handleTrigger(bot)}
-                        disabled={isRunning}
-                        className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <Play className="h-4 w-4" />
-                        {runningBotId === bot.id ? 'Running…' : 'Trigger'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(bot.id)}
-                        disabled={isRunning}
-                        aria-label={`Delete ${bot.name}`}
-                        className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-red-600/20 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-red-400"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {editingBotId === bot.id ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={handleConfirmRename}
+                            aria-label="Confirm rename"
+                            className="inline-flex items-center justify-center rounded-md bg-emerald-600 p-2 text-white hover:bg-emerald-500"
+                          >
+                            <Check className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCancelRename}
+                            aria-label="Cancel rename"
+                            className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => void handleTrigger(bot)}
+                            disabled={isRunning}
+                            className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <Play className="h-4 w-4" />
+                            {runningBotId === bot.id ? 'Running…' : 'Trigger'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleStartRename(bot)}
+                            disabled={isRunning}
+                            aria-label={`Rename ${bot.name}`}
+                            className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(bot.id)}
+                            disabled={isRunning}
+                            aria-label={`Delete ${bot.name}`}
+                            className="inline-flex items-center justify-center rounded-md bg-neutral-200 p-2 text-neutral-500 hover:bg-red-600/20 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-red-400"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
 
