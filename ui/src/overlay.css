@@ -26,6 +26,18 @@ body {
   background: rgba(255, 255, 255, 0.9);
 }
 
+.overlay-dot-index {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font: 700 10px/1 sans-serif;
+  color: rgba(6, 78, 59, 1);
+}
+
 @keyframes overlay-pulse {
   0%,
   100% {

@@ -19,7 +19,9 @@ function Overlay(): React.JSX.Element {
           key={`${dot.x}-${dot.y}-${index}`}
           className="overlay-dot"
           style={{ left: dot.x, top: dot.y }}
-        />
+        >
+          <span className="overlay-dot-index">{index + 1}</span>
+        </span>
       ))}
     </>
   );
