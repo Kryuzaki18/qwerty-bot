@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_THEME, THEME_STORAGE_KEY } from '../constants/theme.constant';
+import { DEFAULT_THEME } from '../constants/theme.constant';
+import { THEME_STORAGE_KEY } from '../constants/storage.constant';
 
 export type Theme = 'light' | 'dark';
 

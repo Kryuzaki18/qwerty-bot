@@ -1,7 +1,7 @@
 import { FileText, LayoutDashboard, MapPin, Settings, type LucideIcon } from 'lucide-react';
 import type { Page } from '../types/nav';
 import Dashboard from '../pages/Dashboard';
-import Triggers from '../pages/Triggers';
+import Triggers from '../pages/triggers/Triggers';
 import Logs from '../pages/Logs';
 import SettingsPage from '../pages/Settings';
 

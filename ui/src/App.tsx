@@ -19,7 +19,7 @@ function App(): React.JSX.Element {
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title={activePage} />
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4">
           <PageComponent />
         </main>
       </div>

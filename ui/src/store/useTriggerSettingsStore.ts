@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_DELAY_MS, TRIGGER_DEFAULTS_STORAGE_KEY } from '../constants/trigger.constant';
+import { DEFAULT_DELAY_MS } from '../constants/trigger.constant';
+import { TRIGGER_DEFAULTS_STORAGE_KEY } from '../constants/storage.constant';
 
 interface TriggerSettingsState {
   defaultDelayMs: number;

@@ -44,9 +44,6 @@ export const KEY_OPTIONS: Array<{ label: string; value: string }> = [
 export const CAPTURING_OVERLAY_ID = '__capturing__';
 export const MOUSE_CLICK_SETTLE_MS = 50;
 
-export const TRIGGER_DEFAULTS_STORAGE_KEY = 'qwerty-bot-trigger-defaults';
-
-export const TRIGGER_BOTS_STORAGE_KEY = 'qwerty-bot-trigger-bots';
 export const MAX_TRIGGER_BOTS = 20;
 
 export const GENERATE_POSITIONS_OPTIONS = [5, 10, 15, 20];
