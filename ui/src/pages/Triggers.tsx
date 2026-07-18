@@ -41,6 +41,10 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function Locations(): React.JSX.Element {
   const { triggerBots, setTriggerBots } = useTriggerBotsStore();
   const [runningBotId, setRunningBotId] = useState<string | null>(null);
@@ -316,7 +320,14 @@ function Locations(): React.JSX.Element {
 
   const handleCopyBot = (bot: TriggerBot): void => {
     if (triggerBots.length >= MAX_TRIGGER_BOTS) return;
-    const copyName = `${bot.name}-copy`;
+    const baseNameMatch = bot.name.match(/^(.*)-\d+$/);
+    const baseName = baseNameMatch ? baseNameMatch[1] : bot.name;
+    const counterPattern = new RegExp(`^${escapeRegExp(baseName)}-(\\d+)$`);
+    const maxCounter = triggerBots.reduce((max, existing) => {
+      const match = existing.name.match(counterPattern);
+      return match ? Math.max(max, Number(match[1])) : max;
+    }, 0);
+    const copyName = `${baseName}-${maxCounter + 1}`;
     const newBot: TriggerBot = {
       ...bot,
       id: `${copyName}-${Date.now()}`,
