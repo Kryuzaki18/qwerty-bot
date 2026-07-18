@@ -1,11 +1,11 @@
 import { FileText, LayoutDashboard, MapPin, Settings, type LucideIcon } from 'lucide-react';
 import type { Page } from '../types/nav';
 import Dashboard from '../pages/Dashboard';
-import Locations from '../pages/Locations';
+import Triggers from '../pages/Triggers';
 import Logs from '../pages/Logs';
 import SettingsPage from '../pages/Settings';
 
-export const PAGES = ['Dashboard', 'Locations', 'Logs', 'Settings'] as const;
+export const PAGES = ['Dashboard', 'Triggers', 'Logs', 'Settings'] as const;
 
 export const DEFAULT_PAGE: Page = 'Dashboard';
 
@@ -14,14 +14,14 @@ export const NAV_ITEM_INACTIVE_CLASS = 'text-neutral-500 hover:bg-neutral-100 ho
 
 export const PAGE_ICONS: Record<Page, LucideIcon> = {
   Dashboard: LayoutDashboard,
-  Locations: MapPin,
+  Triggers: MapPin,
   Logs: FileText,
   Settings: Settings,
 };
 
 export const PAGE_COMPONENTS: Record<Page, () => React.JSX.Element> = {
   Dashboard,
-  Locations,
+  Triggers,
   Logs,
   Settings: SettingsPage,
 };

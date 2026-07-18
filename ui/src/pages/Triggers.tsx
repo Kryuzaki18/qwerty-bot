@@ -18,7 +18,7 @@ import {
   DEFAULT_DELAY_MS,
   DELAY_OPTIONS,
   MOUSE_CLICK_SETTLE_MS,
-} from "../constants/locations.constant";
+} from "../constants/trigger.constant";
 import {
   ICON_BUTTON,
   ICON_BUTTON_DANGER_HOVER,
