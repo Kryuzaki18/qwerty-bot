@@ -54,6 +54,9 @@ function Locations(): React.JSX.Element {
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPositions, setCapturedPositions] = useState<Point[]>([]);
   const [setName, setSetName] = useState("");
+  const [addingLocationBotId, setAddingLocationBotId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     const unsubscribePoint = window.capture.onPointCaptured((point) => {
@@ -88,6 +91,14 @@ function Locations(): React.JSX.Element {
   }, [isCapturing, capturedPositions]);
 
   const handleAddSets = (): void => {
+    setAddingLocationBotId(null);
+    setCapturedPositions([]);
+    setIsCapturing(true);
+    void window.capture.start();
+  };
+
+  const handleStartAddLocation = (bot: TriggerBot): void => {
+    setAddingLocationBotId(bot.id);
     setCapturedPositions([]);
     setIsCapturing(true);
     void window.capture.start();
@@ -96,11 +107,46 @@ function Locations(): React.JSX.Element {
   const handleCancelCapture = (): void => {
     void window.capture.stop();
     setCapturedPositions([]);
+    setAddingLocationBotId(null);
+  };
+
+  const handleAddLocationsToBot = (botId: string): void => {
+    if (capturedPositions.length === 0) return;
+    const newPositions = capturedPositions.map((point) => ({
+      ...point,
+      delayMs: DEFAULT_DELAY_MS,
+    }));
+    setTriggerBots((prev) =>
+      prev.map((bot) =>
+        bot.id === botId
+          ? { ...bot, positions: [...bot.positions, ...newPositions] }
+          : bot,
+      ),
+    );
+    if (visibleBotId === botId) {
+      const bot = triggerBots.find((b) => b.id === botId);
+      if (bot) {
+        const nextPositions = [...bot.positions, ...newPositions];
+        void window.overlay.setBotDots(
+          botId,
+          nextPositions.map((position) => ({ x: position.x, y: position.y })),
+        );
+      }
+    }
+    setAddingLocationBotId(null);
+    setCapturedPositions([]);
   };
 
   const handleSave = (): void => {
+    if (capturedPositions.length === 0) return;
+    if (addingLocationBotId) {
+      handleAddLocationsToBot(addingLocationBotId);
+      void window.capture.stop();
+      setIsCapturing(false);
+      return;
+    }
     const trimmedName = setName.trim();
-    if (!trimmedName || capturedPositions.length === 0) return;
+    if (!trimmedName) return;
     const newBot: TriggerBot = {
       id: `${trimmedName}-${Date.now()}`,
       name: trimmedName,
@@ -114,6 +160,8 @@ function Locations(): React.JSX.Element {
     setCollapsedBotIds((prev) => new Set(prev).add(newBot.id));
     setSetName("");
     setCapturedPositions([]);
+    void window.capture.stop();
+    setIsCapturing(false);
   };
 
   const updatePositionDelay = (
@@ -325,6 +373,15 @@ function Locations(): React.JSX.Element {
                         <>
                           <button
                             type="button"
+                            onClick={() => handleStartAddLocation(bot)}
+                            disabled={isRunning || isCapturing}
+                            aria-label={`Add location to ${bot.name}`}
+                            className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleToggleView(bot)}
                             disabled={isRunning}
                             aria-label={
@@ -424,6 +481,60 @@ function Locations(): React.JSX.Element {
                       ))}
                     </ul>
                   )}
+
+                  {addingLocationBotId === bot.id && (
+                    <div className="mt-3 flex flex-col gap-2 rounded-md border border-emerald-600/30 bg-emerald-500/10 p-3">
+                      <p className="text-xs text-emerald-800 dark:text-emerald-300">
+                        {isCapturing
+                          ? "Capturing — press Space anywhere on screen to add a position, Escape to stop."
+                          : "Capture stopped."}
+                      </p>
+                      {capturedPositions.length > 0 && (
+                        <ul className="flex flex-col gap-1">
+                          {capturedPositions.map((point, index) => (
+                            <li
+                              key={`new-${bot.id}-${index}-${point.x}-${point.y}`}
+                              className="flex items-center justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs dark:bg-neutral-950"
+                            >
+                              <span className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-300">
+                                <MapPin className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                                #{index + 1} — {point.x}, {point.y}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteCapturedPosition(index)
+                                }
+                                aria-label={`Delete captured position ${index + 1}`}
+                                className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER}`}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleCancelCapture}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-red-600/20 hover:text-red-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-red-400"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSave}
+                          disabled={capturedPositions.length === 0}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <Save className="h-3.5 w-3.5" />
+                          Add position(s)
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -459,7 +570,7 @@ function Locations(): React.JSX.Element {
           </div>
         </div>
 
-        {isCapturing && (
+        {isCapturing && !addingLocationBotId && (
           <p className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-300">
             Capturing — press Space anywhere on screen to add the mouse
             position, Escape to stop.
@@ -467,7 +578,16 @@ function Locations(): React.JSX.Element {
         )}
 
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-          {capturedPositions.length === 0 && !isCapturing ? (
+          {addingLocationBotId ? (
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Capturing new positions for{" "}
+              <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                {triggerBots.find((bot) => bot.id === addingLocationBotId)
+                  ?.name ?? "the selected trigger bot"}
+              </span>{" "}
+              — see its card in Trigger Bots.
+            </p>
+          ) : capturedPositions.length === 0 && !isCapturing ? (
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
               No positions captured yet.
             </p>
@@ -498,23 +618,25 @@ function Locations(): React.JSX.Element {
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-          <input
-            value={setName}
-            onChange={(event) => setSetName(event.target.value)}
-            placeholder="Trigger set name"
-            className="flex-1 rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-900"
-          />
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!setName.trim() || capturedPositions.length === 0}
-            className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Save className="h-4 w-4" />
-            Save sets
-          </button>
-        </div>
+        {!addingLocationBotId && (
+          <div className="flex shrink-0 items-center gap-2 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+            <input
+              value={setName}
+              onChange={(event) => setSetName(event.target.value)}
+              placeholder="Trigger set name"
+              className="flex-1 rounded-md border border-neutral-200 bg-neutral-100 px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-900"
+            />
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!setName.trim() || capturedPositions.length === 0}
+              className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Save className="h-4 w-4" />
+              Save sets
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );
