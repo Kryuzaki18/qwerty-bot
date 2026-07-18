@@ -93,6 +93,12 @@ function Locations(): React.JSX.Element {
   useEffect(() => {
     const unsubscribe = window.overlay.onPositionUpdated(
       (botId, index, point) => {
+        if (botId === CAPTURING_OVERLAY_ID) {
+          setCapturedPositions((prev) =>
+            prev.map((position, i) => (i === index ? point : position)),
+          );
+          return;
+        }
         setTriggerBots((prev) =>
           prev.map((bot) =>
             bot.id === botId
@@ -397,7 +403,7 @@ function Locations(): React.JSX.Element {
                           <button
                             type="button"
                             onClick={() => handleToggleView(bot)}
-                            disabled={isRunning}
+                            disabled={isRunning || isCapturing}
                             aria-label={
                               visibleBotId === bot.id
                                 ? `Hide ${bot.name} on screen`
