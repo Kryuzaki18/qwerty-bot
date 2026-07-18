@@ -331,7 +331,7 @@ function TriggerBots({
                             </select>
                           </label>
                           <label className="flex flex-col gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
-                            After key
+                            After key delay
                             <select
                               value={position.key === "" ? "" : position.keyDelayMs}
                               onChange={(event) =>

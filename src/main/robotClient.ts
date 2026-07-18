@@ -23,6 +23,15 @@ function loadNut(): typeof NutJS | null {
 
 const nut = loadNut();
 
+// nut-js applies its own hidden delays before every mouse click (100ms) and
+// keyboard press/release (300ms each) on top of the delays this app already
+// manages explicitly via sleep(), making triggers run much slower than the
+// configured delay. Disable them since we own the timing ourselves.
+if (nut) {
+  nut.mouse.config.autoDelayMs = 0;
+  nut.keyboard.config.autoDelayMs = 0;
+}
+
 function requireNut(): typeof NutJS {
   if (!nut) {
     throw new Error(

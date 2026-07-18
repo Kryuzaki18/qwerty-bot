@@ -1,6 +1,7 @@
 import { RotateCcw } from "lucide-react";
-import { DELAY_OPTIONS, KEY_OPTIONS } from "../constants/trigger.constant";
+import { KEY_OPTIONS } from "../constants/trigger.constant";
 import { useTriggerSettingsStore } from "../store/useTriggerSettingsStore";
+import DelayOptions from "./triggers/components/DelayOptions";
 
 function Settings(): React.JSX.Element {
   const {
@@ -43,11 +44,7 @@ function Settings(): React.JSX.Element {
               onChange={(event) => setDefaultDelayMs(Number(event.target.value))}
               className="rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
             >
-              {DELAY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <DelayOptions />
             </select>
           </label>
 
@@ -75,11 +72,7 @@ function Settings(): React.JSX.Element {
               className="rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
             >
               {defaultKey === "" && <option value="">N/A</option>}
-              {DELAY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <DelayOptions />
             </select>
           </label>
         </div>
