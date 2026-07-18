@@ -133,6 +133,31 @@ function Locations(): React.JSX.Element {
     );
   };
 
+  const handleDeletePosition = (botId: string, positionIndex: number): void => {
+    setTriggerBots((prev) =>
+      prev.map((bot) =>
+        bot.id === botId
+          ? {
+              ...bot,
+              positions: bot.positions.filter((_, i) => i !== positionIndex),
+            }
+          : bot,
+      ),
+    );
+    if (visibleBotId === botId) {
+      const bot = triggerBots.find((b) => b.id === botId);
+      if (bot) {
+        const nextPositions = bot.positions.filter(
+          (_, i) => i !== positionIndex,
+        );
+        void window.overlay.setBotDots(
+          botId,
+          nextPositions.map((position) => ({ x: position.x, y: position.y })),
+        );
+      }
+    }
+  };
+
   const handleDelete = (botId: string): void => {
     setTriggerBots((prev) => prev.filter((bot) => bot.id !== botId));
     if (visibleBotId === botId) {
@@ -355,24 +380,37 @@ function Locations(): React.JSX.Element {
                               #{index + 1} — {position.x}, {position.y}
                             </p>
                           </div>
-                          <select
-                            value={position.delayMs}
-                            onChange={(event) =>
-                              updatePositionDelay(
-                                bot.id,
-                                index,
-                                Number(event.target.value),
-                              )
-                            }
-                            disabled={isRunning}
-                            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
-                          >
-                            {DELAY_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={position.delayMs}
+                              onChange={(event) =>
+                                updatePositionDelay(
+                                  bot.id,
+                                  index,
+                                  Number(event.target.value),
+                                )
+                              }
+                              disabled={isRunning}
+                              className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+                            >
+                              {DELAY_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeletePosition(bot.id, index)
+                              }
+                              disabled={isRunning}
+                              aria-label={`Delete position ${index + 1} from ${bot.name}`}
+                              className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER} ${ICON_BUTTON_DISABLED}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
