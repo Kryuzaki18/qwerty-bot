@@ -13,7 +13,12 @@ import {
   X,
 } from "lucide-react";
 import type { Point } from "../../../src/shared/ipc";
-import { DEFAULT_DELAY_MS, DELAY_OPTIONS } from "../constants/locations.constant";
+import {
+  CAPTURING_OVERLAY_ID,
+  DEFAULT_DELAY_MS,
+  DELAY_OPTIONS,
+  MOUSE_CLICK_SETTLE_MS,
+} from "../constants/locations.constant";
 import {
   ICON_BUTTON,
   ICON_BUTTON_DANGER_HOVER,
@@ -69,6 +74,17 @@ function Locations(): React.JSX.Element {
       void window.overlay.clearAll();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isCapturing) {
+      void window.overlay.setBotDots(CAPTURING_OVERLAY_ID, null);
+      return;
+    }
+    void window.overlay.setBotDots(
+      CAPTURING_OVERLAY_ID,
+      capturedPositions.length > 0 ? capturedPositions : null,
+    );
+  }, [isCapturing, capturedPositions]);
 
   const handleAddSets = (): void => {
     setCapturedPositions([]);
@@ -184,7 +200,7 @@ function Locations(): React.JSX.Element {
     try {
       for (const position of bot.positions) {
         await window.robot.moveMouse(position.x, position.y);
-        await sleep(50);
+        await sleep(MOUSE_CLICK_SETTLE_MS);
         await window.robot.clickMouse();
         await sleep(position.delayMs);
       }

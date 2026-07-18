@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
 import type { ScreenSize, SystemInfo } from '../../../src/shared/ipc';
+import {
+  AUTOMATION_UNAVAILABLE_MESSAGE,
+  BYTES_PER_GB,
+  SECONDS_PER_DAY,
+  SECONDS_PER_HOUR,
+  SECONDS_PER_MINUTE,
+} from '../constants/dashboard.constant';
 
 function formatBytes(bytes: number): string {
-  return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+  return `${(bytes / BYTES_PER_GB).toFixed(1)} GB`;
 }
 
 function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
+  const days = Math.floor(seconds / SECONDS_PER_DAY);
+  const hours = Math.floor((seconds % SECONDS_PER_DAY) / SECONDS_PER_HOUR);
+  const minutes = Math.floor((seconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
   return [days && `${days}d`, hours && `${hours}h`, `${minutes}m`].filter(Boolean).join(' ');
 }
 
@@ -79,7 +86,7 @@ function Dashboard(): React.JSX.Element {
     <div className="flex flex-col gap-6">
       {available === false && (
         <p className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
-          Automation is unavailable on this platform — nut.js failed to load its native binding.
+          {AUTOMATION_UNAVAILABLE_MESSAGE}
         </p>
       )}
 

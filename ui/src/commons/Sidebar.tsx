@@ -1,4 +1,5 @@
-import { PAGE_ICONS, PAGES } from '../constants/nav.constant';
+import { APP_COPYRIGHT, APP_LOGO_ALT, APP_LOGO_SRC, APP_NAME, APP_VERSION } from '../constants/app.constant';
+import { NAV_ITEM_ACTIVE_CLASS, NAV_ITEM_INACTIVE_CLASS, PAGE_ICONS, PAGES } from '../constants/nav.constant';
 import type { Page } from '../types/nav';
 
 interface SidebarProps {
@@ -10,8 +11,8 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
   return (
     <nav className="flex w-56 flex-col gap-1 border-r border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="mb-4 flex items-center gap-2 px-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-        <img src="/qwerty-logo.png" alt="qwerty-bot logo" className="h-6 w-6 rounded-md" />
-        qwerty-bot
+        <img src={APP_LOGO_SRC} alt={APP_LOGO_ALT} className="h-6 w-6 rounded-md" />
+        {APP_NAME}
       </div>
       {PAGES.map((page) => {
         const Icon = PAGE_ICONS[page];
@@ -22,9 +23,7 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
             type="button"
             onClick={() => onNavigate(page)}
             className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              isActive
-                ? 'bg-emerald-600/15 text-emerald-700 dark:text-emerald-400'
-                : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
+              isActive ? NAV_ITEM_ACTIVE_CLASS : NAV_ITEM_INACTIVE_CLASS
             }`}
           >
             <Icon className="h-4 w-4" />
@@ -33,8 +32,8 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
         );
       })}
       <div className="text-center mt-auto px-2 pt-4 text-[10px] text-neutral-600 dark:text-neutral-400">
-        <p>v1.0.0 by KJED@Kotlin</p>
-        <p>&copy; 2026. All rights reserved.</p>
+        <p>{APP_VERSION}</p>
+        <p>{APP_COPYRIGHT}</p>
       </div>
     </nav>
   );

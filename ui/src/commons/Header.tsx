@@ -1,4 +1,5 @@
 import { Moon, Sun } from 'lucide-react';
+import { THEME_TOGGLE_ARIA_LABELS } from '../constants/theme.constant';
 import { useThemeStore } from '../store/useThemeStore';
 
 interface HeaderProps {
@@ -16,7 +17,7 @@ function Header({ title }: HeaderProps): React.JSX.Element {
       <button
         type="button"
         onClick={toggleTheme}
-        aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+        aria-label={THEME_TOGGLE_ARIA_LABELS[theme]}
         className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
       >
         {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

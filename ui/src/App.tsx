@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import Header from './commons/Header';
 import Sidebar from './commons/Sidebar';
 import type { Page } from './types/nav';
-import { PAGE_COMPONENTS } from './constants/nav.constant';
+import { DEFAULT_PAGE, PAGE_COMPONENTS } from './constants/nav.constant';
 import { useThemeStore } from './store/useThemeStore';
 
 function App(): React.JSX.Element {
-  const [activePage, setActivePage] = useState<Page>('Dashboard');
+  const [activePage, setActivePage] = useState<Page>(DEFAULT_PAGE);
   const theme = useThemeStore((state) => state.theme);
   const PageComponent = PAGE_COMPONENTS[activePage];
 

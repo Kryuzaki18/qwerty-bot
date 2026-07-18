@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { DEFAULT_THEME, THEME_STORAGE_KEY } from '../constants/theme.constant';
 
 export type Theme = 'light' | 'dark';
 
@@ -11,9 +12,9 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      theme: 'dark',
+      theme: DEFAULT_THEME,
       toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
     }),
-    { name: 'qwerty-bot-theme' },
+    { name: THEME_STORAGE_KEY },
   ),
 );
