@@ -32,6 +32,10 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
           </button>
         );
       })}
+      <div className="text-center mt-auto px-2 pt-4 text-[10px] text-neutral-600 dark:text-neutral-400">
+        <p>v1.0.0 by KJED@Kotlin</p>
+        <p>&copy; 2026. All rights reserved.</p>
+      </div>
     </nav>
   );
 }
