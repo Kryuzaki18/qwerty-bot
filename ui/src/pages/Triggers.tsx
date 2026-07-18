@@ -17,7 +17,9 @@ import {
   CAPTURING_OVERLAY_ID,
   DEFAULT_DELAY_MS,
   DELAY_OPTIONS,
+  KEY_OPTIONS,
   MOUSE_CLICK_SETTLE_MS,
+  NO_KEY_VALUE,
 } from "../constants/trigger.constant";
 import {
   ICON_BUTTON,
@@ -28,6 +30,8 @@ import {
 
 interface TriggerPosition extends Point {
   delayMs: number;
+  key: string;
+  keyDelayMs: number;
 }
 
 interface TriggerBot {
@@ -141,6 +145,8 @@ function Locations(): React.JSX.Element {
     const newPositions = capturedPositions.map((point) => ({
       ...point,
       delayMs: DEFAULT_DELAY_MS,
+      key: NO_KEY_VALUE,
+      keyDelayMs: DEFAULT_DELAY_MS,
     }));
     setTriggerBots((prev) =>
       prev.map((bot) =>
@@ -179,6 +185,8 @@ function Locations(): React.JSX.Element {
       positions: capturedPositions.map((point) => ({
         ...point,
         delayMs: DEFAULT_DELAY_MS,
+        key: NO_KEY_VALUE,
+        keyDelayMs: DEFAULT_DELAY_MS,
       })),
       createdAt: Date.now(),
     };
@@ -202,6 +210,44 @@ function Locations(): React.JSX.Element {
               ...bot,
               positions: bot.positions.map((p, i) =>
                 i === positionIndex ? { ...p, delayMs } : p,
+              ),
+            }
+          : bot,
+      ),
+    );
+  };
+
+  const updatePositionKey = (
+    botId: string,
+    positionIndex: number,
+    key: string,
+  ): void => {
+    setTriggerBots((prev) =>
+      prev.map((bot) =>
+        bot.id === botId
+          ? {
+              ...bot,
+              positions: bot.positions.map((p, i) =>
+                i === positionIndex ? { ...p, key } : p,
+              ),
+            }
+          : bot,
+      ),
+    );
+  };
+
+  const updatePositionKeyDelay = (
+    botId: string,
+    positionIndex: number,
+    keyDelayMs: number,
+  ): void => {
+    setTriggerBots((prev) =>
+      prev.map((bot) =>
+        bot.id === botId
+          ? {
+              ...bot,
+              positions: bot.positions.map((p, i) =>
+                i === positionIndex ? { ...p, keyDelayMs } : p,
               ),
             }
           : bot,
@@ -305,6 +351,10 @@ function Locations(): React.JSX.Element {
         await sleep(MOUSE_CLICK_SETTLE_MS);
         await window.robot.clickMouse();
         await sleep(position.delayMs);
+        if (position.key) {
+          await window.robot.pressKey(position.key);
+          await sleep(position.keyDelayMs);
+        }
       }
     } finally {
       await window.appWindow.restore();
@@ -473,33 +523,15 @@ function Locations(): React.JSX.Element {
                       {bot.positions.map((position, index) => (
                         <li
                           key={`${bot.id}-${index}`}
-                          className="flex items-center justify-between gap-2 rounded-md bg-neutral-100 px-3 py-2 dark:bg-neutral-900"
+                          className="flex flex-col gap-2 rounded-md bg-neutral-100 p-2 dark:bg-neutral-900"
                         >
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                              #{index + 1} — {position.x}, {position.y}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <select
-                              value={position.delayMs}
-                              onChange={(event) =>
-                                updatePositionDelay(
-                                  bot.id,
-                                  index,
-                                  Number(event.target.value),
-                                )
-                              }
-                              disabled={isRunning}
-                              className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
-                            >
-                              {DELAY_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                              <p className="text-xs text-neutral-600 dark:text-neutral-300">
+                                #{index + 1} — {position.x}, {position.y}
+                              </p>
+                            </div>
                             <button
                               type="button"
                               onClick={() =>
@@ -511,6 +543,79 @@ function Locations(): React.JSX.Element {
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            <label className="flex items-center gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+                              Click delay
+                              <select
+                                value={position.delayMs}
+                                onChange={(event) =>
+                                  updatePositionDelay(
+                                    bot.id,
+                                    index,
+                                    Number(event.target.value),
+                                  )
+                                }
+                                disabled={isRunning}
+                                className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+                              >
+                                {DELAY_OPTIONS.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="flex items-center gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+                              Key
+                              <select
+                                value={position.key}
+                                onChange={(event) =>
+                                  updatePositionKey(
+                                    bot.id,
+                                    index,
+                                    event.target.value,
+                                  )
+                                }
+                                disabled={isRunning}
+                                className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+                              >
+                                {KEY_OPTIONS.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="flex items-center gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+                              After key
+                              <select
+                                value={
+                                  position.key === NO_KEY_VALUE
+                                    ? ""
+                                    : position.keyDelayMs
+                                }
+                                onChange={(event) =>
+                                  updatePositionKeyDelay(
+                                    bot.id,
+                                    index,
+                                    Number(event.target.value),
+                                  )
+                                }
+                                disabled={isRunning || position.key === NO_KEY_VALUE}
+                                className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+                              >
+                                {position.key === NO_KEY_VALUE && (
+                                  <option value="">N/A</option>
+                                )}
+                                {DELAY_OPTIONS.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
                           </div>
                         </li>
                       ))}

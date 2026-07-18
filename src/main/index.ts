@@ -114,6 +114,7 @@ function registerRobotHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.getScreenSize, () => robotClient.getScreenSize());
   ipcMain.handle(IPC_CHANNELS.moveMouse, (_event, x: number, y: number) => robotClient.moveMouse(x, y));
   ipcMain.handle(IPC_CHANNELS.clickMouse, () => robotClient.clickMouse());
+  ipcMain.handle(IPC_CHANNELS.pressKey, (_event, key: string) => robotClient.pressKey(key));
 }
 
 function registerSystemHandlers(): void {

@@ -13,6 +13,7 @@ export const IPC_CHANNELS = {
   getScreenSize: 'robot:getScreenSize',
   moveMouse: 'robot:moveMouse',
   clickMouse: 'robot:clickMouse',
+  pressKey: 'robot:pressKey',
 } as const;
 
 export interface RobotApi {
@@ -20,6 +21,7 @@ export interface RobotApi {
   getScreenSize(): Promise<ScreenSize>;
   moveMouse(x: number, y: number): Promise<void>;
   clickMouse(): Promise<void>;
+  pressKey(key: string): Promise<void>;
 }
 
 export const CAPTURE_CHANNELS = {

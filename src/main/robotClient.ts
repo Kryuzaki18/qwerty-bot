@@ -7,6 +7,7 @@ export interface RobotClient {
   getMousePos(): Promise<Point>;
   clickMouse(): Promise<void>;
   getScreenSize(): Promise<ScreenSize>;
+  pressKey(key: string): Promise<void>;
 }
 
 function loadNut(): typeof NutJS | null {
@@ -49,5 +50,14 @@ export const robotClient: RobotClient = {
     const nutjs = requireNut();
     const [width, height] = await Promise.all([nutjs.screen.width(), nutjs.screen.height()]);
     return { width, height };
+  },
+  async pressKey(key) {
+    const nutjs = requireNut();
+    const keyEnum = (nutjs.Key as unknown as Record<string, number>)[key];
+    if (keyEnum === undefined) {
+      throw new Error(`Unknown key: ${key}`);
+    }
+    await nutjs.keyboard.pressKey(keyEnum);
+    await nutjs.keyboard.releaseKey(keyEnum);
   },
 };
