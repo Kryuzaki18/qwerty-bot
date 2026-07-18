@@ -123,7 +123,14 @@ function Locations(): React.JSX.Element {
     return unsubscribe;
   }, []);
 
+  const hideVisibleBot = (): void => {
+    if (!visibleBotId) return;
+    void window.overlay.setBotDots(visibleBotId, null);
+    setVisibleBotId(null);
+  };
+
   const handleAddSets = (): void => {
+    hideVisibleBot();
     setAddingLocationBotId(null);
     setIsCapturing(true);
     void window.capture.start();
@@ -143,6 +150,7 @@ function Locations(): React.JSX.Element {
   };
 
   const handleGeneratePositions = async (count: number): Promise<void> => {
+    hideVisibleBot();
     if (isCapturing) {
       void window.capture.stop();
       setIsCapturing(false);
@@ -494,7 +502,9 @@ function Locations(): React.JSX.Element {
                           <button
                             type="button"
                             onClick={() => handleToggleView(bot)}
-                            disabled={isRunning || isCapturing}
+                            disabled={
+                              isRunning || isCapturing || capturedPositions.length > 0
+                            }
                             aria-label={
                               visibleBotId === bot.id
                                 ? `Hide ${bot.name} on screen`
@@ -515,7 +525,9 @@ function Locations(): React.JSX.Element {
                           <button
                             type="button"
                             onClick={() => handleStartAddLocation(bot)}
-                            disabled={isRunning || isCapturing}
+                            disabled={
+                              isRunning || isCapturing || capturedPositions.length > 0
+                            }
                             aria-label={`Add location to ${bot.name}`}
                             className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
                           >
