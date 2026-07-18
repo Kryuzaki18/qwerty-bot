@@ -6,6 +6,11 @@ export const DELAY_OPTIONS: Array<{ label: string; value: number }> = [
   { label: '2secs', value: 2000 },
   { label: '3secs', value: 3000 },
   { label: '5secs', value: 5000 },
+  { label: '6secs', value: 6000 },
+  { label: '7secs', value: 7000 },
+  { label: '8secs', value: 8000 },
+  { label: '9secs', value: 9000 },
+  { label: '10secs', value: 10000 },
 ];
 
 export const DEFAULT_DELAY_MS = 500;
