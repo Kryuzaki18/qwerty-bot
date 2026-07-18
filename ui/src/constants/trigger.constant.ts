@@ -45,3 +45,8 @@ export const CAPTURING_OVERLAY_ID = '__capturing__';
 export const MOUSE_CLICK_SETTLE_MS = 50;
 
 export const TRIGGER_DEFAULTS_STORAGE_KEY = 'qwerty-bot-trigger-defaults';
+
+export const GENERATE_POSITIONS_OPTIONS = [5, 10, 15, 20];
+export const GENERATE_POSITIONS_COLUMNS = 5;
+export const GENERATE_POSITIONS_SPACING_X = 120;
+export const GENERATE_POSITIONS_SPACING_Y = 100;

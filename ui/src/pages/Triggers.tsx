@@ -16,6 +16,10 @@ import type { Point } from "../../../src/shared/ipc";
 import {
   CAPTURING_OVERLAY_ID,
   DELAY_OPTIONS,
+  GENERATE_POSITIONS_COLUMNS,
+  GENERATE_POSITIONS_OPTIONS,
+  GENERATE_POSITIONS_SPACING_X,
+  GENERATE_POSITIONS_SPACING_Y,
   KEY_OPTIONS,
   MOUSE_CLICK_SETTLE_MS,
 } from "../constants/trigger.constant";
@@ -86,15 +90,11 @@ function Locations(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (!isCapturing) {
-      void window.overlay.setBotDots(CAPTURING_OVERLAY_ID, null);
-      return;
-    }
     void window.overlay.setBotDots(
       CAPTURING_OVERLAY_ID,
       capturedPositions.length > 0 ? capturedPositions : null,
     );
-  }, [isCapturing, capturedPositions]);
+  }, [capturedPositions]);
 
   useEffect(() => {
     const unsubscribe = window.overlay.onPositionUpdated(
@@ -124,7 +124,6 @@ function Locations(): React.JSX.Element {
 
   const handleAddSets = (): void => {
     setAddingLocationBotId(null);
-    setCapturedPositions([]);
     setIsCapturing(true);
     void window.capture.start();
   };
@@ -140,6 +139,30 @@ function Locations(): React.JSX.Element {
     void window.capture.stop();
     setCapturedPositions([]);
     setAddingLocationBotId(null);
+  };
+
+  const handleGeneratePositions = async (count: number): Promise<void> => {
+    if (isCapturing) {
+      void window.capture.stop();
+      setIsCapturing(false);
+    }
+    const { width, height } = await window.robot.getScreenSize();
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const rowCount = Math.ceil(count / GENERATE_POSITIONS_COLUMNS);
+    const totalHeight = (rowCount - 1) * GENERATE_POSITIONS_SPACING_Y;
+    const points: Point[] = Array.from({ length: count }, (_, i) => {
+      const row = Math.floor(i / GENERATE_POSITIONS_COLUMNS);
+      const rowStart = row * GENERATE_POSITIONS_COLUMNS;
+      const colsInRow = Math.min(GENERATE_POSITIONS_COLUMNS, count - rowStart);
+      const col = i - rowStart;
+      const rowWidth = (colsInRow - 1) * GENERATE_POSITIONS_SPACING_X;
+      return {
+        x: Math.round(centerX - rowWidth / 2 + col * GENERATE_POSITIONS_SPACING_X),
+        y: Math.round(centerY - totalHeight / 2 + row * GENERATE_POSITIONS_SPACING_Y),
+      };
+    });
+    setCapturedPositions(points);
   };
 
   const handleAddLocationsToBot = (botId: string): void => {
@@ -685,11 +708,30 @@ function Locations(): React.JSX.Element {
       </section>
 
       <section className="flex min-h-0 flex-col gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
             Trigger Set Positions
           </h2>
           <div className="flex items-center gap-2">
+            <select
+              value=""
+              onChange={(event) => {
+                const count = Number(event.target.value);
+                if (count > 0) void handleGeneratePositions(count);
+              }}
+              disabled={isRunning}
+              aria-label="Generate positions"
+              className="rounded-md border border-neutral-200 bg-neutral-200 px-3 py-2 text-sm font-medium outline-none hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            >
+              <option value="" disabled>
+                Generate Positions
+              </option>
+              {GENERATE_POSITIONS_OPTIONS.map((count) => (
+                <option key={count} value={count}>
+                  Generate {count} Position{count === 1 ? "" : "s"}
+                </option>
+              ))}
+            </select>
             <button
               type="button"
               onClick={handleAddSets}

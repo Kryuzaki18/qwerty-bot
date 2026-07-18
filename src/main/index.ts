@@ -41,7 +41,11 @@ function createWindow(): void {
     mainWindow = null;
   });
 
-  void win.loadFile(join(__dirname, '../renderer/index.html'));
+  if (process.env['ELECTRON_RENDERER_URL']) {
+    void win.loadURL(process.env['ELECTRON_RENDERER_URL']);
+  } else {
+    void win.loadFile(join(__dirname, '../renderer/index.html'));
+  }
 
   mainWindow = win;
 }
@@ -85,7 +89,11 @@ async function ensureOverlayWindow(): Promise<BrowserWindow> {
 
   const ready = waitForOverlayReady(win);
 
-  void win.loadFile(join(__dirname, '../renderer/src/overlay/overlay.html'));
+  if (process.env['ELECTRON_RENDERER_URL']) {
+    void win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/src/overlay/overlay.html`);
+  } else {
+    void win.loadFile(join(__dirname, '../renderer/src/overlay/overlay.html'));
+  }
 
   win.on('closed', () => {
     overlayWindow = null;
