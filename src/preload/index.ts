@@ -6,6 +6,7 @@ import {
   SYSTEM_CHANNELS,
   type CaptureApi,
   type OverlayApi,
+  type OverlayDot,
   type Point,
   type RobotApi,
   type SystemApi,
@@ -42,11 +43,19 @@ const overlayApi: OverlayApi = {
   setBotDots: (botId, points) => ipcRenderer.invoke(OVERLAY_CHANNELS.setBotDots, botId, points),
   clearAll: () => ipcRenderer.invoke(OVERLAY_CHANNELS.clearAll),
   onDotsUpdated: (callback) => {
-    const listener = (_event: Electron.IpcRendererEvent, dots: Point[]): void => callback(dots);
+    const listener = (_event: Electron.IpcRendererEvent, dots: OverlayDot[]): void => callback(dots);
     ipcRenderer.on(OVERLAY_CHANNELS.dotsUpdated, listener);
     return () => ipcRenderer.removeListener(OVERLAY_CHANNELS.dotsUpdated, listener);
   },
   notifyReady: () => ipcRenderer.send(OVERLAY_CHANNELS.ready),
+  setInteractive: (interactive) => ipcRenderer.send(OVERLAY_CHANNELS.setInteractive, interactive),
+  reportDrag: (botId, index, point) => ipcRenderer.send(OVERLAY_CHANNELS.positionDragged, botId, index, point),
+  onPositionUpdated: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, botId: string, index: number, point: Point): void =>
+      callback(botId, index, point);
+    ipcRenderer.on(OVERLAY_CHANNELS.positionUpdated, listener);
+    return () => ipcRenderer.removeListener(OVERLAY_CHANNELS.positionUpdated, listener);
+  },
 };
 
 contextBridge.exposeInMainWorld('robot', robotApi);

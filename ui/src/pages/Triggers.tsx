@@ -90,6 +90,26 @@ function Locations(): React.JSX.Element {
     );
   }, [isCapturing, capturedPositions]);
 
+  useEffect(() => {
+    const unsubscribe = window.overlay.onPositionUpdated(
+      (botId, index, point) => {
+        setTriggerBots((prev) =>
+          prev.map((bot) =>
+            bot.id === botId
+              ? {
+                  ...bot,
+                  positions: bot.positions.map((position, i) =>
+                    i === index ? { ...position, ...point } : position,
+                  ),
+                }
+              : bot,
+          ),
+        );
+      },
+    );
+    return unsubscribe;
+  }, []);
+
   const handleAddSets = (): void => {
     setAddingLocationBotId(null);
     setCapturedPositions([]);

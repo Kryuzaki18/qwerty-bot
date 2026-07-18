@@ -2,13 +2,21 @@ import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { robotClient } from './robotClient';
 import { getSystemInfo } from './systemInfo';
-import { CAPTURE_CHANNELS, IPC_CHANNELS, OVERLAY_CHANNELS, SYSTEM_CHANNELS, type Point } from '../shared/ipc';
+import {
+  CAPTURE_CHANNELS,
+  IPC_CHANNELS,
+  OVERLAY_CHANNELS,
+  SYSTEM_CHANNELS,
+  type OverlayDot,
+  type Point,
+} from '../shared/ipc';
 
 let overlayWindow: BrowserWindow | null = null;
+let mainWindow: BrowserWindow | null = null;
 const botDots = new Map<string, Point[]>();
 
 function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 1200,
     height: 670,
     show: false,
@@ -22,16 +30,19 @@ function createWindow(): void {
     },
   });
 
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+  win.once('ready-to-show', () => {
+    win.show();
   });
 
-  mainWindow.on('closed', () => {
+  win.on('closed', () => {
     overlayWindow?.destroy();
     overlayWindow = null;
+    mainWindow = null;
   });
 
-  void mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+  void win.loadFile(join(__dirname, '../renderer/index.html'));
+
+  mainWindow = win;
 }
 
 function waitForOverlayReady(win: BrowserWindow): Promise<void> {
@@ -68,7 +79,7 @@ async function ensureOverlayWindow(): Promise<BrowserWindow> {
       sandbox: false,
     },
   });
-  win.setIgnoreMouseEvents(true);
+  win.setIgnoreMouseEvents(true, { forward: true });
   win.setAlwaysOnTop(true, 'screen-saver');
 
   const ready = waitForOverlayReady(win);
@@ -86,7 +97,12 @@ async function ensureOverlayWindow(): Promise<BrowserWindow> {
 
 function broadcastDots(): void {
   if (!overlayWindow || overlayWindow.isDestroyed()) return;
-  const allDots = Array.from(botDots.values()).flat();
+  const allDots: OverlayDot[] = [];
+  for (const [botId, points] of botDots) {
+    points.forEach((point, index) => {
+      allDots.push({ botId, index, x: point.x, y: point.y });
+    });
+  }
   overlayWindow.webContents.send(OVERLAY_CHANNELS.dotsUpdated, allDots);
   if (allDots.length > 0) overlayWindow.showInactive();
   else overlayWindow.hide();
@@ -117,6 +133,18 @@ function registerOverlayHandlers(): void {
   ipcMain.handle(OVERLAY_CHANNELS.clearAll, () => {
     botDots.clear();
     broadcastDots();
+  });
+
+  ipcMain.on(OVERLAY_CHANNELS.setInteractive, (_event, interactive: boolean) => {
+    overlayWindow?.setIgnoreMouseEvents(!interactive, { forward: true });
+  });
+
+  ipcMain.on(OVERLAY_CHANNELS.positionDragged, (_event, botId: string, index: number, point: Point) => {
+    const points = botDots.get(botId);
+    if (!points || !points[index]) return;
+    points[index] = point;
+    broadcastDots();
+    mainWindow?.webContents.send(OVERLAY_CHANNELS.positionUpdated, botId, index, point);
   });
 }
 

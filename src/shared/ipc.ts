@@ -57,16 +57,29 @@ export interface SystemApi {
   getInfo(): Promise<SystemInfo>;
 }
 
+export interface OverlayDot extends Point {
+  botId: string;
+  index: number;
+}
+
 export const OVERLAY_CHANNELS = {
   setBotDots: 'overlay:setBotDots',
   clearAll: 'overlay:clearAll',
   dotsUpdated: 'overlay:dotsUpdated',
   ready: 'overlay:ready',
+  setInteractive: 'overlay:setInteractive',
+  positionDragged: 'overlay:positionDragged',
+  positionUpdated: 'overlay:positionUpdated',
 } as const;
 
 export interface OverlayApi {
   setBotDots(botId: string, points: Point[] | null): Promise<void>;
   clearAll(): Promise<void>;
-  onDotsUpdated(callback: (dots: Point[]) => void): () => void;
+  onDotsUpdated(callback: (dots: OverlayDot[]) => void): () => void;
   notifyReady(): void;
+  setInteractive(interactive: boolean): void;
+  reportDrag(botId: string, index: number, point: Point): void;
+  onPositionUpdated(
+    callback: (botId: string, index: number, point: Point) => void,
+  ): () => void;
 }
