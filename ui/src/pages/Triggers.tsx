@@ -22,6 +22,7 @@ import {
   GENERATE_POSITIONS_SPACING_X,
   GENERATE_POSITIONS_SPACING_Y,
   KEY_OPTIONS,
+  MAX_TRIGGER_BOTS,
   MOUSE_CLICK_SETTLE_MS,
 } from "../constants/trigger.constant";
 import {
@@ -31,26 +32,17 @@ import {
   ICON_BUTTON_NEUTRAL,
 } from "../constants/button.constant";
 import { useTriggerSettingsStore } from "../store/useTriggerSettingsStore";
-
-interface TriggerPosition extends Point {
-  delayMs: number;
-  key: string;
-  keyDelayMs: number;
-}
-
-interface TriggerBot {
-  id: string;
-  name: string;
-  positions: TriggerPosition[];
-  createdAt: number;
-}
+import {
+  useTriggerBotsStore,
+  type TriggerBot,
+} from "../store/useTriggerBotsStore";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function Locations(): React.JSX.Element {
-  const [triggerBots, setTriggerBots] = useState<TriggerBot[]>([]);
+  const { triggerBots, setTriggerBots } = useTriggerBotsStore();
   const [runningBotId, setRunningBotId] = useState<string | null>(null);
   const [editingBotId, setEditingBotId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -212,7 +204,7 @@ function Locations(): React.JSX.Element {
       return;
     }
     const trimmedName = setName.trim();
-    if (!trimmedName) return;
+    if (!trimmedName || triggerBots.length >= MAX_TRIGGER_BOTS) return;
     const newBot: TriggerBot = {
       id: `${trimmedName}-${Date.now()}`,
       name: trimmedName,
@@ -323,6 +315,7 @@ function Locations(): React.JSX.Element {
   };
 
   const handleCopyBot = (bot: TriggerBot): void => {
+    if (triggerBots.length >= MAX_TRIGGER_BOTS) return;
     const copyName = `${bot.name}-copy`;
     const newBot: TriggerBot = {
       ...bot,
@@ -414,9 +407,14 @@ function Locations(): React.JSX.Element {
   return (
     <div className="grid h-full grid-cols-2 gap-6">
       <section className="flex min-h-0 flex-col gap-3">
-        <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
-          Trigger Bots
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+            Trigger Bots
+          </h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            {triggerBots.length}/{MAX_TRIGGER_BOTS}
+          </p>
+        </div>
         <div className="flex-1 overflow-y-auto">
           {triggerBots.length === 0 ? (
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -545,7 +543,9 @@ function Locations(): React.JSX.Element {
                           <button
                             type="button"
                             onClick={() => handleCopyBot(bot)}
-                            disabled={isRunning}
+                            disabled={
+                              isRunning || triggerBots.length >= MAX_TRIGGER_BOTS
+                            }
                             aria-label={`Copy ${bot.name}`}
                             className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
                           >
@@ -848,7 +848,11 @@ function Locations(): React.JSX.Element {
             <button
               type="button"
               onClick={handleSave}
-              disabled={!setName.trim() || capturedPositions.length === 0}
+              disabled={
+                !setName.trim() ||
+                capturedPositions.length === 0 ||
+                triggerBots.length >= MAX_TRIGGER_BOTS
+              }
               className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Save className="h-4 w-4" />
