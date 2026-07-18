@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Check,
   ChevronDown,
+  Copy,
   Eye,
   EyeOff,
   MapPin,
@@ -313,6 +314,19 @@ function Locations(): React.JSX.Element {
     }
   };
 
+  const handleCopyBot = (bot: TriggerBot): void => {
+    const copyName = `${bot.name}-copy`;
+    const newBot: TriggerBot = {
+      ...bot,
+      id: `${copyName}-${Date.now()}`,
+      name: copyName,
+      positions: bot.positions.map((position) => ({ ...position })),
+      createdAt: Date.now(),
+    };
+    setTriggerBots((prev) => [...prev, newBot]);
+    setCollapsedBotIds((prev) => new Set(prev).add(newBot.id));
+  };
+
   const handleToggleView = (bot: TriggerBot): void => {
     const isVisible = visibleBotId === bot.id;
     if (isVisible) {
@@ -515,6 +529,15 @@ function Locations(): React.JSX.Element {
                             className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
                           >
                             <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyBot(bot)}
+                            disabled={isRunning}
+                            aria-label={`Copy ${bot.name}`}
+                            className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
+                          >
+                            <Copy className="h-4 w-4" />
                           </button>
                           <button
                             type="button"
