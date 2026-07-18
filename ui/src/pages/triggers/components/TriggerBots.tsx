@@ -222,7 +222,7 @@ function TriggerBots({
                         <button
                           type="button"
                           onClick={() => handleStartRename(bot)}
-                          disabled={isRunning}
+                          disabled={isRunning || isCapturing || capturedPositions.length > 0}
                           aria-label={`Rename ${bot.name}`}
                           className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
                         >
@@ -232,7 +232,7 @@ function TriggerBots({
                           type="button"
                           onClick={() => onCopyBot(bot)}
                           disabled={
-                            isRunning || triggerBots.length >= MAX_TRIGGER_BOTS
+                            isRunning || isCapturing || capturedPositions.length > 0 || triggerBots.length >= MAX_TRIGGER_BOTS
                           }
                           aria-label={`Copy ${bot.name}`}
                           className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
@@ -242,7 +242,7 @@ function TriggerBots({
                         <button
                           type="button"
                           onClick={() => onDelete(bot.id)}
-                          disabled={isRunning}
+                          disabled={isRunning || isCapturing || capturedPositions.length > 0}
                           aria-label={`Delete ${bot.name}`}
                           className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER} ${ICON_BUTTON_DISABLED}`}
                         >
@@ -251,7 +251,7 @@ function TriggerBots({
                         <button
                           type="button"
                           onClick={() => onTrigger(bot)}
-                          disabled={isRunning}
+                          disabled={isRunning || isCapturing || capturedPositions.length > 0}
                           aria-label={
                             runningBotId === bot.id
                               ? `Running ${bot.name}`

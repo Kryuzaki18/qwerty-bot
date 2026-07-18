@@ -227,6 +227,7 @@ function Locations(): React.JSX.Element {
   };
 
   const handleTrigger = async (bot: TriggerBot): Promise<void> => {
+    hideVisibleBot();
     setRunningBotId(bot.id);
     try {
       await window.appWindow.minimize();

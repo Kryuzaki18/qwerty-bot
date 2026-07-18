@@ -50,7 +50,7 @@ function TriggerSetPositions({
               const count = Number(event.target.value);
               if (count > 0) onGeneratePositions(count);
             }}
-            disabled={isRunning}
+            disabled={isRunning || isCapturing}
             aria-label="Generate positions"
             className="rounded-md border border-neutral-200 bg-neutral-200 px-3 py-2 text-sm font-medium outline-none hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700"
           >
@@ -72,7 +72,7 @@ function TriggerSetPositions({
             <Plus className="h-4 w-4" />
             Add sets
           </button>
-          {isCapturing && (
+          {(isCapturing || capturedPositions.length > 0) && (
             <button
               type="button"
               onClick={onCancelCapture}
