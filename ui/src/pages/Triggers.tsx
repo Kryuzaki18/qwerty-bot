@@ -34,6 +34,7 @@ interface TriggerBot {
   id: string;
   name: string;
   positions: TriggerPosition[];
+  createdAt: number;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -107,6 +108,7 @@ function Locations(): React.JSX.Element {
         ...point,
         delayMs: DEFAULT_DELAY_MS,
       })),
+      createdAt: Date.now(),
     };
     setTriggerBots((prev) => [...prev, newBot]);
     setCollapsedBotIds((prev) => new Set(prev).add(newBot.id));
@@ -254,6 +256,16 @@ function Locations(): React.JSX.Element {
                   key={bot.id}
                   className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800"
                 >
+                  <div className="mb-2 flex items-center justify-between gap-2 text-[10px] text-neutral-400 dark:text-neutral-500">
+                    <p>
+                      Created{" "}
+                      {new Date(bot.createdAt).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                    <p>{bot.positions.length} position(s)</p>
+                  </div>
                   <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
@@ -288,9 +300,6 @@ function Locations(): React.JSX.Element {
                           {bot.name}
                         </p>
                       )}
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        {bot.positions.length} position(s)
-                      </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {editingBotId === bot.id ? (
