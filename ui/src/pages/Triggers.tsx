@@ -314,7 +314,7 @@ function Locations(): React.JSX.Element {
                     </p>
                     <p>{bot.positions.length} position(s)</p>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => handleToggleCollapse(bot.id)}
@@ -344,7 +344,10 @@ function Locations(): React.JSX.Element {
                           className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm text-neutral-900 outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
                         />
                       ) : (
-                        <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        <p
+                          title={bot.name}
+                          className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100"
+                        >
                           {bot.name}
                         </p>
                       )}
@@ -373,15 +376,6 @@ function Locations(): React.JSX.Element {
                         <>
                           <button
                             type="button"
-                            onClick={() => handleStartAddLocation(bot)}
-                            disabled={isRunning || isCapturing}
-                            aria-label={`Add location to ${bot.name}`}
-                            className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
                             onClick={() => handleToggleView(bot)}
                             disabled={isRunning}
                             aria-label={
@@ -403,12 +397,12 @@ function Locations(): React.JSX.Element {
                           </button>
                           <button
                             type="button"
-                            onClick={() => void handleTrigger(bot)}
-                            disabled={isRunning}
-                            className={`inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium hover:bg-emerald-500 ${ICON_BUTTON_DISABLED}`}
+                            onClick={() => handleStartAddLocation(bot)}
+                            disabled={isRunning || isCapturing}
+                            aria-label={`Add location to ${bot.name}`}
+                            className={`${ICON_BUTTON} ${ICON_BUTTON_NEUTRAL} ${ICON_BUTTON_DISABLED}`}
                           >
-                            <Play className="h-4 w-4" />
-                            {runningBotId === bot.id ? "Running…" : "Trigger"}
+                            <Plus className="h-4 w-4" />
                           </button>
                           <button
                             type="button"
@@ -427,6 +421,19 @@ function Locations(): React.JSX.Element {
                             className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER} ${ICON_BUTTON_DISABLED}`}
                           >
                             <Trash2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleTrigger(bot)}
+                            disabled={isRunning}
+                            aria-label={
+                              runningBotId === bot.id
+                                ? `Running ${bot.name}`
+                                : `Trigger ${bot.name}`
+                            }
+                            className={`inline-flex items-center justify-center rounded-md bg-emerald-600 p-2 text-white hover:bg-emerald-500 ${ICON_BUTTON_DISABLED}`}
+                          >
+                            <Play className="h-4 w-4" />
                           </button>
                         </>
                       )}
