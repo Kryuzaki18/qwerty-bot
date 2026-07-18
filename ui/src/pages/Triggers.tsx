@@ -299,6 +299,7 @@ function Locations(): React.JSX.Element {
   const handleTrigger = async (bot: TriggerBot): Promise<void> => {
     setRunningBotId(bot.id);
     try {
+      await window.appWindow.minimize();
       for (const position of bot.positions) {
         await window.robot.moveMouse(position.x, position.y);
         await sleep(MOUSE_CLICK_SETTLE_MS);
@@ -306,6 +307,7 @@ function Locations(): React.JSX.Element {
         await sleep(position.delayMs);
       }
     } finally {
+      await window.appWindow.restore();
       setRunningBotId(null);
     }
   };

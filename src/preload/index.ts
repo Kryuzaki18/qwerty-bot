@@ -4,12 +4,14 @@ import {
   IPC_CHANNELS,
   OVERLAY_CHANNELS,
   SYSTEM_CHANNELS,
+  WINDOW_CHANNELS,
   type CaptureApi,
   type OverlayApi,
   type OverlayDot,
   type Point,
   type RobotApi,
   type SystemApi,
+  type WindowApi,
 } from '../shared/ipc';
 
 const robotApi: RobotApi = {
@@ -58,7 +60,13 @@ const overlayApi: OverlayApi = {
   },
 };
 
+const appWindowApi: WindowApi = {
+  minimize: () => ipcRenderer.invoke(WINDOW_CHANNELS.minimize),
+  restore: () => ipcRenderer.invoke(WINDOW_CHANNELS.restore),
+};
+
 contextBridge.exposeInMainWorld('robot', robotApi);
 contextBridge.exposeInMainWorld('capture', captureApi);
 contextBridge.exposeInMainWorld('system', systemApi);
 contextBridge.exposeInMainWorld('overlay', overlayApi);
+contextBridge.exposeInMainWorld('appWindow', appWindowApi);

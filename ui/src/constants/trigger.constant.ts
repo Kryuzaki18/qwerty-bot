@@ -13,7 +13,7 @@ export const DELAY_OPTIONS: Array<{ label: string; value: number }> = [
   { label: '10secs', value: 10000 },
 ];
 
-export const DEFAULT_DELAY_MS = 500;
+export const DEFAULT_DELAY_MS = 100;
 
 export const CAPTURING_OVERLAY_ID = '__capturing__';
 export const MOUSE_CLICK_SETTLE_MS = 50;

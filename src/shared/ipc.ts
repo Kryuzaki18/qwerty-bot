@@ -83,3 +83,13 @@ export interface OverlayApi {
     callback: (botId: string, index: number, point: Point) => void,
   ): () => void;
 }
+
+export const WINDOW_CHANNELS = {
+  minimize: 'window:minimize',
+  restore: 'window:restore',
+} as const;
+
+export interface WindowApi {
+  minimize(): Promise<void>;
+  restore(): Promise<void>;
+}

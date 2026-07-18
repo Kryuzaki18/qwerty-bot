@@ -7,6 +7,7 @@ import {
   IPC_CHANNELS,
   OVERLAY_CHANNELS,
   SYSTEM_CHANNELS,
+  WINDOW_CHANNELS,
   type OverlayDot,
   type Point,
 } from '../shared/ipc';
@@ -119,6 +120,18 @@ function registerSystemHandlers(): void {
   ipcMain.handle(SYSTEM_CHANNELS.getInfo, () => getSystemInfo());
 }
 
+function registerWindowHandlers(): void {
+  ipcMain.handle(WINDOW_CHANNELS.minimize, () => {
+    mainWindow?.minimize();
+  });
+
+  ipcMain.handle(WINDOW_CHANNELS.restore, () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.restore();
+    mainWindow.focus();
+  });
+}
+
 function registerOverlayHandlers(): void {
   ipcMain.handle(OVERLAY_CHANNELS.setBotDots, async (_event, botId: string, points: Point[] | null) => {
     if (points && points.length > 0) {
@@ -177,6 +190,7 @@ void app.whenReady().then(() => {
   registerCaptureHandlers();
   registerSystemHandlers();
   registerOverlayHandlers();
+  registerWindowHandlers();
   createWindow();
 
   app.on('activate', () => {

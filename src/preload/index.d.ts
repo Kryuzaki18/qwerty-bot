@@ -1,4 +1,4 @@
-import type { CaptureApi, OverlayApi, RobotApi, SystemApi } from '../shared/ipc';
+import type { CaptureApi, OverlayApi, RobotApi, SystemApi, WindowApi } from '../shared/ipc';
 
 declare global {
   interface Window {
@@ -6,6 +6,7 @@ declare global {
     capture: CaptureApi;
     system: SystemApi;
     overlay: OverlayApi;
+    appWindow: WindowApi;
   }
 }
 
