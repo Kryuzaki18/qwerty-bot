@@ -15,11 +15,9 @@ import {
 import type { Point } from "../../../src/shared/ipc";
 import {
   CAPTURING_OVERLAY_ID,
-  DEFAULT_DELAY_MS,
   DELAY_OPTIONS,
   KEY_OPTIONS,
   MOUSE_CLICK_SETTLE_MS,
-  NO_KEY_VALUE,
 } from "../constants/trigger.constant";
 import {
   ICON_BUTTON,
@@ -27,6 +25,7 @@ import {
   ICON_BUTTON_DISABLED,
   ICON_BUTTON_NEUTRAL,
 } from "../constants/button.constant";
+import { useTriggerSettingsStore } from "../store/useTriggerSettingsStore";
 
 interface TriggerPosition extends Point {
   delayMs: number;
@@ -61,6 +60,9 @@ function Locations(): React.JSX.Element {
   const [addingLocationBotId, setAddingLocationBotId] = useState<
     string | null
   >(null);
+
+  const { defaultDelayMs, defaultKey, defaultKeyDelayMs } =
+    useTriggerSettingsStore();
 
   useEffect(() => {
     const unsubscribePoint = window.capture.onPointCaptured((point) => {
@@ -144,9 +146,9 @@ function Locations(): React.JSX.Element {
     if (capturedPositions.length === 0) return;
     const newPositions = capturedPositions.map((point) => ({
       ...point,
-      delayMs: DEFAULT_DELAY_MS,
-      key: NO_KEY_VALUE,
-      keyDelayMs: DEFAULT_DELAY_MS,
+      delayMs: defaultDelayMs,
+      key: defaultKey,
+      keyDelayMs: defaultKeyDelayMs,
     }));
     setTriggerBots((prev) =>
       prev.map((bot) =>
@@ -184,9 +186,9 @@ function Locations(): React.JSX.Element {
       name: trimmedName,
       positions: capturedPositions.map((point) => ({
         ...point,
-        delayMs: DEFAULT_DELAY_MS,
-        key: NO_KEY_VALUE,
-        keyDelayMs: DEFAULT_DELAY_MS,
+        delayMs: defaultDelayMs,
+        key: defaultKey,
+        keyDelayMs: defaultKeyDelayMs,
       })),
       createdAt: Date.now(),
     };
@@ -592,7 +594,7 @@ function Locations(): React.JSX.Element {
                               After key
                               <select
                                 value={
-                                  position.key === NO_KEY_VALUE
+                                  position.key === ""
                                     ? ""
                                     : position.keyDelayMs
                                 }
@@ -603,10 +605,10 @@ function Locations(): React.JSX.Element {
                                     Number(event.target.value),
                                   )
                                 }
-                                disabled={isRunning || position.key === NO_KEY_VALUE}
+                                disabled={isRunning || position.key === ""}
                                 className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
                               >
-                                {position.key === NO_KEY_VALUE && (
+                                {position.key === "" && (
                                   <option value="">N/A</option>
                                 )}
                                 {DELAY_OPTIONS.map((option) => (

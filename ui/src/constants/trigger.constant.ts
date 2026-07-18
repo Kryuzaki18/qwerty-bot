@@ -15,10 +15,8 @@ export const DELAY_OPTIONS: Array<{ label: string; value: number }> = [
 
 export const DEFAULT_DELAY_MS = 100;
 
-export const NO_KEY_VALUE = '';
-
 export const KEY_OPTIONS: Array<{ label: string; value: string }> = [
-  { label: 'None', value: NO_KEY_VALUE },
+  { label: 'None', value: '' },
   { label: 'F1', value: 'F1' },
   { label: 'F2', value: 'F2' },
   { label: 'F3', value: 'F3' },
@@ -45,3 +43,5 @@ export const KEY_OPTIONS: Array<{ label: string; value: string }> = [
 
 export const CAPTURING_OVERLAY_ID = '__capturing__';
 export const MOUSE_CLICK_SETTLE_MS = 50;
+
+export const TRIGGER_DEFAULTS_STORAGE_KEY = 'qwerty-bot-trigger-defaults';
