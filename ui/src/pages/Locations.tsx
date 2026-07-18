@@ -60,9 +60,8 @@ function Locations(): React.JSX.Element {
     return () => {
       unsubscribePoint();
       unsubscribeStopped();
-      if (isCapturing) void window.capture.stop();
+      void window.capture.stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
