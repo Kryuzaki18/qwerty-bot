@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import type { Point } from '../../src/shared/ipc';
+import type { Point } from '../../../src/shared/ipc';
 import './overlay.css';
 
 function Overlay(): React.JSX.Element {
