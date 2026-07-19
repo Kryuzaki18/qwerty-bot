@@ -43,3 +43,57 @@ export function generateCopyName(
   }, 0);
   return `${baseName}-${maxCounter + 1}`;
 }
+
+function isValidPosition(value: unknown): value is TriggerPosition {
+  if (typeof value !== "object" || value === null) return false;
+  const position = value as Record<string, unknown>;
+  return (
+    typeof position.x === "number" &&
+    typeof position.y === "number" &&
+    typeof position.delayMs === "number" &&
+    typeof position.key === "string" &&
+    typeof position.keyDelayMs === "number"
+  );
+}
+
+function isValidImportedBot(value: unknown): value is TriggerBot {
+  if (typeof value !== "object" || value === null) return false;
+  const bot = value as Record<string, unknown>;
+  return (
+    typeof bot.name === "string" &&
+    bot.name.trim().length > 0 &&
+    Array.isArray(bot.positions) &&
+    bot.positions.every(isValidPosition)
+  );
+}
+
+export function parseImportedTriggerBots(jsonText: string): TriggerBot[] {
+  let data: unknown;
+  try {
+    data = JSON.parse(jsonText);
+  } catch {
+    throw new Error("File is not valid JSON.");
+  }
+  if (!Array.isArray(data) || data.length === 0 || !data.every(isValidImportedBot)) {
+    throw new Error("File does not contain valid trigger bots data.");
+  }
+  return data;
+}
+
+export function mergeImportedTriggerBots(
+  existingBots: TriggerBot[],
+  importedBots: TriggerBot[],
+): TriggerBot[] {
+  return importedBots.reduce((bots, importedBot) => {
+    const name = bots.some((bot) => bot.name === importedBot.name)
+      ? generateCopyName(bots, importedBot.name)
+      : importedBot.name;
+    return [
+      ...bots,
+      createTriggerBot(
+        name,
+        importedBot.positions.map((position) => ({ ...position })),
+      ),
+    ];
+  }, existingBots);
+}

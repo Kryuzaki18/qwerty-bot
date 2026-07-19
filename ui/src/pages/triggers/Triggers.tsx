@@ -19,6 +19,8 @@ import { generateGridPositions } from "../../utils/gridPositions.util";
 import {
   createTriggerBot,
   generateCopyName,
+  mergeImportedTriggerBots,
+  parseImportedTriggerBots,
   toTriggerPositions,
 } from "../../utils/triggerBot.util";
 import {
@@ -226,6 +228,48 @@ function Locations(): React.JSX.Element {
     setCapturedPositions((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleExportTriggerBots = (): void => {
+    if (triggerBots.length === 0) return;
+    const dataStr = JSON.stringify(triggerBots, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `trigger-bots-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportTriggerBots = (jsonText: string): void => {
+    let importedBots: TriggerBot[];
+    try {
+      importedBots = parseImportedTriggerBots(jsonText);
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Invalid trigger bots file.",
+      );
+      return;
+    }
+
+    const availableSlots = MAX_TRIGGER_BOTS - triggerBots.length;
+    if (availableSlots <= 0) {
+      window.alert(
+        `Cannot import: maximum of ${MAX_TRIGGER_BOTS} trigger bots reached.`,
+      );
+      return;
+    }
+    if (importedBots.length > availableSlots) {
+      window.alert(
+        `Only ${availableSlots} of ${importedBots.length} trigger bot(s) were imported (limit ${MAX_TRIGGER_BOTS}).`,
+      );
+    }
+
+    const boundedImportedBots = importedBots.slice(0, availableSlots);
+    setTriggerBots((prev) =>
+      mergeImportedTriggerBots(prev, boundedImportedBots),
+    );
+  };
+
   const handleTrigger = async (bot: TriggerBot): Promise<void> => {
     hideVisibleBot();
     setRunningBotId(bot.id);
@@ -235,10 +279,14 @@ function Locations(): React.JSX.Element {
         await window.robot.moveMouse(position.x, position.y);
         await sleep(MOUSE_CLICK_SETTLE_MS);
         await window.robot.clickMouse();
-        await sleep(position.delayMs);
+        if (position.delayMs > 0) {
+          await sleep(position.delayMs);
+        }
         if (position.key) {
           await window.robot.pressKey(position.key);
-          await sleep(position.keyDelayMs);
+          if(position.keyDelayMs > 0 ) {
+            await sleep(position.keyDelayMs);
+          }
         }
       }
     } finally {
@@ -273,6 +321,8 @@ function Locations(): React.JSX.Element {
         onDelete={handleDelete}
         onTrigger={(bot) => void handleTrigger(bot)}
         onDeletePosition={handleDeletePosition}
+        onExport={handleExportTriggerBots}
+        onImport={handleImportTriggerBots}
       />
 
       <TriggerSetPositions

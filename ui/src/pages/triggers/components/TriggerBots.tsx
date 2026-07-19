@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Check,
   ChevronDown,
   Copy,
+  Download,
   Eye,
   EyeOff,
   MapPin,
@@ -11,6 +12,7 @@ import {
   Plus,
   Save,
   Trash2,
+  Upload,
   X,
 } from "lucide-react";
 import { KEY_OPTIONS, MAX_TRIGGER_BOTS } from "../../../constants/trigger.constant";
@@ -40,6 +42,8 @@ interface TriggerBotsProps {
   onDelete: (botId: string) => void;
   onTrigger: (bot: TriggerBot) => void;
   onDeletePosition: (botId: string, positionIndex: number) => void;
+  onExport: () => void;
+  onImport: (jsonText: string) => void;
 }
 
 function TriggerBots({
@@ -55,6 +59,8 @@ function TriggerBots({
   onDelete,
   onTrigger,
   onDeletePosition,
+  onExport,
+  onImport,
 }: TriggerBotsProps): React.JSX.Element {
   const {
     triggerBots,
@@ -74,6 +80,28 @@ function TriggerBots({
 
   const [editingBotId, setEditingBotId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  const isActionDisabled = isRunning || isCapturing || capturedPositions.length > 0;
+
+  const handleImportClick = (): void => {
+    importInputRef.current?.click();
+  };
+
+  const handleImportFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        onImport(reader.result);
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const handleStartRename = (bot: TriggerBot): void => {
     setEditingBotId(bot.id);
@@ -97,13 +125,40 @@ function TriggerBots({
 
   return (
     <section className="flex min-h-0 flex-col gap-3 bg-neutral-50 dark:bg-neutral-900/30 p-3 rounded-lg">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
           Trigger Bots
         </h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          {triggerBots.length}/{MAX_TRIGGER_BOTS}
-        </p>
+        <div className="flex items-center gap-2">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json"
+            className="hidden"
+            onChange={handleImportFileChange}
+          />
+          <button
+            type="button"
+            onClick={handleImportClick}
+            disabled={isActionDisabled || triggerBots.length >= MAX_TRIGGER_BOTS}
+            className="inline-flex items-center gap-1.5 rounded-md bg-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Import
+          </button>
+          <button
+            type="button"
+            onClick={onExport}
+            disabled={isActionDisabled || triggerBots.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-md bg-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </button>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            {triggerBots.length}/{MAX_TRIGGER_BOTS}
+          </p>
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto">
         {triggerBots.length === 0 ? (
