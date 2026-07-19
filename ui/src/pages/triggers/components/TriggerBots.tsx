@@ -32,11 +32,13 @@ import DelayOptions from "./DelayOptions";
 interface TriggerBotsProps {
   collapsedBotIds: Set<string>;
   visibleBotId: string | null;
+  hiddenPositionIndices: Record<string, Set<number>>;
   runningBotId: string | null;
   isRunning: boolean;
   capture: CaptureState;
   onToggleCollapse: (botId: string) => void;
   onToggleView: (bot: TriggerBot) => void;
+  onTogglePositionVisibility: (botId: string, positionIndex: number) => void;
   onStartAddLocation: (bot: TriggerBot) => void;
   onCopyBot: (bot: TriggerBot) => void;
   onDelete: (botId: string) => void;
@@ -49,11 +51,13 @@ interface TriggerBotsProps {
 function TriggerBots({
   collapsedBotIds,
   visibleBotId,
+  hiddenPositionIndices,
   runningBotId,
   isRunning,
   capture,
   onToggleCollapse,
   onToggleView,
+  onTogglePositionVisibility,
   onStartAddLocation,
   onCopyBot,
   onDelete,
@@ -103,6 +107,9 @@ function TriggerBots({
     };
     reader.readAsText(file);
   };
+
+  const isBotFullyVisible = (bot: TriggerBot): boolean =>
+    visibleBotId === bot.id && (hiddenPositionIndices[bot.id]?.size ?? 0) === 0;
 
   const handleStartRename = (bot: TriggerBot): void => {
     setEditingBotId(bot.id);
@@ -248,17 +255,17 @@ function TriggerBots({
                             isRunning || isCapturing || capturedPositions.length > 0
                           }
                           aria-label={
-                            visibleBotId === bot.id
+                            isBotFullyVisible(bot)
                               ? `Hide ${bot.name} on screen`
                               : `Show ${bot.name} on screen`
                           }
                           className={`${ICON_BUTTON} ${ICON_BUTTON_DISABLED} ${
-                            visibleBotId === bot.id
+                            isBotFullyVisible(bot)
                               ? "bg-emerald-600/15 text-emerald-700 hover:bg-emerald-600/25 dark:text-emerald-400"
                               : ICON_BUTTON_NEUTRAL
                           }`}
                         >
-                          {visibleBotId === bot.id ? (
+                          {isBotFullyVisible(bot) ? (
                             <Eye className="h-4 w-4" />
                           ) : (
                             <EyeOff className="h-4 w-4" />
@@ -336,15 +343,49 @@ function TriggerBots({
                               #{index + 1} — {position.x}, {position.y}
                             </p>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => onDeletePosition(bot.id, index)}
-                            disabled={isRunning}
-                            aria-label={`Delete position ${index + 1} from ${bot.name}`}
-                            className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER} ${ICON_BUTTON_DISABLED}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            {(() => {
+                              const isBotVisible = visibleBotId === bot.id;
+                              const isPositionHidden =
+                                hiddenPositionIndices[bot.id]?.has(index) ?? false;
+                              const isPositionVisible =
+                                isBotVisible && !isPositionHidden;
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    onTogglePositionVisibility(bot.id, index)
+                                  }
+                                  disabled={isRunning}
+                                  aria-label={
+                                    isPositionVisible
+                                      ? `Hide position ${index + 1} of ${bot.name} on screen`
+                                      : `Show position ${index + 1} of ${bot.name} on screen`
+                                  }
+                                  className={`${ICON_BUTTON} ${ICON_BUTTON_DISABLED} ${
+                                    isPositionVisible
+                                      ? "bg-emerald-600/15 text-emerald-700 hover:bg-emerald-600/25 dark:text-emerald-400"
+                                      : ICON_BUTTON_NEUTRAL
+                                  }`}
+                                >
+                                  {isPositionVisible ? (
+                                    <Eye className="h-3.5 w-3.5" />
+                                  ) : (
+                                    <EyeOff className="h-3.5 w-3.5" />
+                                  )}
+                                </button>
+                              );
+                            })()}
+                            <button
+                              type="button"
+                              onClick={() => onDeletePosition(bot.id, index)}
+                              disabled={isRunning}
+                              aria-label={`Delete position ${index + 1} from ${bot.name}`}
+                              className={`${ICON_BUTTON} bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 ${ICON_BUTTON_DANGER_HOVER} ${ICON_BUTTON_DISABLED}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">

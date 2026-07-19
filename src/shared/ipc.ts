@@ -77,7 +77,7 @@ export const OVERLAY_CHANNELS = {
 } as const;
 
 export interface OverlayApi {
-  setBotDots(botId: string, points: Point[] | null): Promise<void>;
+  setBotDots(botId: string, points: (Point | null)[] | null): Promise<void>;
   clearAll(): Promise<void>;
   onDotsUpdated(callback: (dots: OverlayDot[]) => void): () => void;
   notifyReady(): void;

@@ -15,7 +15,7 @@ import {
 
 let overlayWindow: BrowserWindow | null = null;
 let mainWindow: BrowserWindow | null = null;
-const botDots = new Map<string, Point[]>();
+const botDots = new Map<string, (Point | null)[]>();
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -110,6 +110,7 @@ function broadcastDots(): void {
   const allDots: OverlayDot[] = [];
   for (const [botId, points] of botDots) {
     points.forEach((point, index) => {
+      if (!point) return;
       allDots.push({ botId, index, x: point.x, y: point.y });
     });
   }
@@ -143,8 +144,9 @@ function registerWindowHandlers(): void {
 }
 
 function registerOverlayHandlers(): void {
-  ipcMain.handle(OVERLAY_CHANNELS.setBotDots, async (_event, botId: string, points: Point[] | null) => {
-    if (points && points.length > 0) {
+  ipcMain.handle(OVERLAY_CHANNELS.setBotDots, async (_event, botId: string, points: (Point | null)[] | null) => {
+    const hasVisiblePoints = points?.some((point) => point !== null) ?? false;
+    if (hasVisiblePoints && points) {
       botDots.set(botId, points);
       await ensureOverlayWindow();
     } else {

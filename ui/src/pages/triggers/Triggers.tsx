@@ -12,7 +12,12 @@ import {
 } from "../../store/useTriggerBotsStore";
 import TriggerBots from "./components/TriggerBots";
 import TriggerSetPositions from "./components/TriggerSetPositions";
-import { clearOverlay, setOverlayDots, toOverlayPoints } from "../../services/overlayService";
+import {
+  clearOverlay,
+  setOverlayDots,
+  shiftHiddenIndicesAfterDelete,
+  toOverlayDots,
+} from "../../services/overlayService";
 import type { CaptureState } from "../../types/capture";
 import { sleep } from "../../utils/async.util";
 import { generateGridPositions } from "../../utils/gridPositions.util";
@@ -36,6 +41,9 @@ function Locations(): React.JSX.Element {
     () => new Set(triggerBots.map((bot) => bot.id)),
   );
   const [visibleBotId, setVisibleBotId] = useState<string | null>(null);
+  const [hiddenPositionIndices, setHiddenPositionIndices] = useState<
+    Record<string, Set<number>>
+  >({});
 
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPositions, setCapturedPositions] = useState<Point[]>([]);
@@ -84,15 +92,35 @@ function Locations(): React.JSX.Element {
           );
           return;
         }
-        setTriggerBots((prev) => updatePositionPoint(prev, botId, index, point));
+        setTriggerBots((prev) =>
+          updatePositionPoint(prev, botId, index, point),
+        );
       },
     );
     return unsubscribe;
   }, []);
 
+  const applyOverlayForBot = (
+    botId: string,
+    positions: TriggerBot["positions"],
+    hidden: Set<number>,
+  ): void => {
+    setOverlayDots(botId, toOverlayDots(positions, hidden));
+  };
+
+  const clearHiddenPositions = (botId: string): void => {
+    setHiddenPositionIndices((prev) => {
+      if (!(botId in prev)) return prev;
+      const next = { ...prev };
+      delete next[botId];
+      return next;
+    });
+  };
+
   const hideVisibleBot = (): void => {
     if (!visibleBotId) return;
     clearOverlay(visibleBotId);
+    clearHiddenPositions(visibleBotId);
     setVisibleBotId(null);
   };
 
@@ -138,7 +166,11 @@ function Locations(): React.JSX.Element {
     if (visibleBotId === botId) {
       const bot = triggerBots.find((b) => b.id === botId);
       if (bot) {
-        setOverlayDots(botId, toOverlayPoints([...bot.positions, ...newPositions]));
+        applyOverlayForBot(
+          botId,
+          [...bot.positions, ...newPositions],
+          hiddenPositionIndices[botId] ?? new Set(),
+        );
       }
     }
     setAddingLocationBotId(null);
@@ -174,19 +206,25 @@ function Locations(): React.JSX.Element {
 
   const handleDeletePosition = (botId: string, positionIndex: number): void => {
     setTriggerBots((prev) => deletePosition(prev, botId, positionIndex));
+    const nextHidden = shiftHiddenIndicesAfterDelete(
+      hiddenPositionIndices[botId] ?? new Set(),
+      positionIndex,
+    );
+    setHiddenPositionIndices((prev) => ({ ...prev, [botId]: nextHidden }));
     if (visibleBotId === botId) {
       const bot = triggerBots.find((b) => b.id === botId);
       if (bot) {
         const nextPositions = bot.positions.filter(
           (_, i) => i !== positionIndex,
         );
-        setOverlayDots(botId, toOverlayPoints(nextPositions));
+        applyOverlayForBot(botId, nextPositions, nextHidden);
       }
     }
   };
 
   const handleDelete = (botId: string): void => {
     setTriggerBots((prev) => prev.filter((bot) => bot.id !== botId));
+    clearHiddenPositions(botId);
     if (visibleBotId === botId) {
       setVisibleBotId(null);
       clearOverlay(botId);
@@ -205,16 +243,54 @@ function Locations(): React.JSX.Element {
   };
 
   const handleToggleView = (bot: TriggerBot): void => {
-    const isVisible = visibleBotId === bot.id;
-    if (isVisible) {
-      setVisibleBotId(null);
-      clearOverlay(bot.id);
+    const isFullyVisible =
+      visibleBotId === bot.id &&
+      (hiddenPositionIndices[bot.id]?.size ?? 0) === 0;
+
+    if (isFullyVisible) {
+      const allHidden = new Set(bot.positions.map((_, i) => i));
+      setHiddenPositionIndices((prev) => ({ ...prev, [bot.id]: allHidden }));
+      applyOverlayForBot(bot.id, bot.positions, allHidden);
       return;
     }
+
     const previousBotId = visibleBotId;
+    if (previousBotId && previousBotId !== bot.id) {
+      clearOverlay(previousBotId);
+      clearHiddenPositions(previousBotId);
+    }
     setVisibleBotId(bot.id);
-    if (previousBotId) clearOverlay(previousBotId);
-    setOverlayDots(bot.id, toOverlayPoints(bot.positions));
+    setHiddenPositionIndices((prev) => ({ ...prev, [bot.id]: new Set() }));
+    applyOverlayForBot(bot.id, bot.positions, new Set());
+  };
+
+  const handleTogglePositionVisibility = (
+    botId: string,
+    positionIndex: number,
+  ): void => {
+    const bot = triggerBots.find((b) => b.id === botId);
+    if (!bot) return;
+
+    if (visibleBotId !== botId) {
+      const previousBotId = visibleBotId;
+      if (previousBotId) {
+        clearOverlay(previousBotId);
+        clearHiddenPositions(previousBotId);
+      }
+      const onlyClickedVisible = new Set(
+        bot.positions.map((_, i) => i).filter((i) => i !== positionIndex),
+      );
+      setVisibleBotId(botId);
+      setHiddenPositionIndices((prev) => ({ ...prev, [botId]: onlyClickedVisible }));
+      applyOverlayForBot(botId, bot.positions, onlyClickedVisible);
+      return;
+    }
+
+    const nextHidden = new Set(hiddenPositionIndices[botId] ?? []);
+    if (nextHidden.has(positionIndex)) nextHidden.delete(positionIndex);
+    else nextHidden.add(positionIndex);
+    setHiddenPositionIndices((prev) => ({ ...prev, [botId]: nextHidden }));
+    applyOverlayForBot(botId, bot.positions, nextHidden);
   };
 
   const handleToggleCollapse = (botId: string): void => {
@@ -313,11 +389,13 @@ function Locations(): React.JSX.Element {
       <TriggerBots
         collapsedBotIds={collapsedBotIds}
         visibleBotId={visibleBotId}
+        hiddenPositionIndices={hiddenPositionIndices}
         runningBotId={runningBotId}
         isRunning={isRunning}
         capture={captureState}
         onToggleCollapse={handleToggleCollapse}
         onToggleView={handleToggleView}
+        onTogglePositionVisibility={handleTogglePositionVisibility}
         onStartAddLocation={handleStartAddLocation}
         onCopyBot={handleCopyBot}
         onDelete={handleDelete}
