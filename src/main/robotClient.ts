@@ -12,7 +12,6 @@ export interface RobotClient {
 
 function loadNut(): typeof NutJS | null {
   try {
-    // @nut-tree-fork/nut-js loads a native addon and may fail on unsupported platforms.
     return require('@nut-tree-fork/nut-js') as typeof NutJS;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -23,13 +22,10 @@ function loadNut(): typeof NutJS | null {
 
 const nut = loadNut();
 
-// nut-js applies its own hidden delays before every mouse click (100ms) and
-// keyboard press/release (300ms each) on top of the delays this app already
-// manages explicitly via sleep(), making triggers run much slower than the
-// configured delay. Disable them since we own the timing ourselves.
 if (nut) {
   nut.mouse.config.autoDelayMs = 0;
   nut.keyboard.config.autoDelayMs = 0;
+  nut.providerRegistry.getKeyboard().setKeyboardDelay(0);
 }
 
 function requireNut(): typeof NutJS {
