@@ -132,6 +132,7 @@ function Locations(): React.JSX.Element {
       delayMs: defaultDelayMs,
       key: defaultKey,
       keyDelayMs: defaultKeyDelayMs,
+      mouseButton: "left",
     });
     setTriggerBots((prev) => appendPositions(prev, botId, newPositions));
     if (visibleBotId === botId) {
@@ -160,6 +161,7 @@ function Locations(): React.JSX.Element {
         delayMs: defaultDelayMs,
         key: defaultKey,
         keyDelayMs: defaultKeyDelayMs,
+        mouseButton: "left",
       }),
     );
     setTriggerBots((prev) => [...prev, newBot]);
@@ -278,7 +280,7 @@ function Locations(): React.JSX.Element {
       for (const position of bot.positions) {
         await window.robot.moveMouse(position.x, position.y);
         await sleep(MOUSE_CLICK_SETTLE_MS);
-        await window.robot.clickMouse();
+        await window.robot.clickMouse(position.mouseButton);
         if (position.delayMs > 0) {
           await sleep(position.delayMs);
         }

@@ -1,10 +1,11 @@
-import type { Point } from "../../../src/shared/ipc";
+import type { MouseButton, Point } from "../../../src/shared/ipc";
 import type { TriggerBot, TriggerPosition } from "../store/useTriggerBotsStore";
 
 export interface PositionDefaults {
   delayMs: number;
   key: string;
   keyDelayMs: number;
+  mouseButton: MouseButton;
 }
 
 export function toTriggerPositions(
@@ -44,7 +45,14 @@ export function generateCopyName(
   return `${baseName}-${maxCounter + 1}`;
 }
 
-function isValidPosition(value: unknown): value is TriggerPosition {
+type ImportedPosition = Omit<TriggerPosition, "mouseButton"> & {
+  mouseButton?: MouseButton;
+};
+type ImportedBot = Omit<TriggerBot, "positions"> & {
+  positions: ImportedPosition[];
+};
+
+function isValidPosition(value: unknown): value is ImportedPosition {
   if (typeof value !== "object" || value === null) return false;
   const position = value as Record<string, unknown>;
   return (
@@ -52,11 +60,14 @@ function isValidPosition(value: unknown): value is TriggerPosition {
     typeof position.y === "number" &&
     typeof position.delayMs === "number" &&
     typeof position.key === "string" &&
-    typeof position.keyDelayMs === "number"
+    typeof position.keyDelayMs === "number" &&
+    (position.mouseButton === undefined ||
+      position.mouseButton === "left" ||
+      position.mouseButton === "right")
   );
 }
 
-function isValidImportedBot(value: unknown): value is TriggerBot {
+function isValidImportedBot(value: unknown): value is ImportedBot {
   if (typeof value !== "object" || value === null) return false;
   const bot = value as Record<string, unknown>;
   return (
@@ -77,7 +88,13 @@ export function parseImportedTriggerBots(jsonText: string): TriggerBot[] {
   if (!Array.isArray(data) || data.length === 0 || !data.every(isValidImportedBot)) {
     throw new Error("File does not contain valid trigger bots data.");
   }
-  return data;
+  return data.map((bot) => ({
+    ...bot,
+    positions: bot.positions.map((position) => ({
+      ...position,
+      mouseButton: position.mouseButton ?? "left",
+    })),
+  }));
 }
 
 export function mergeImportedTriggerBots(

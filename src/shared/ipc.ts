@@ -8,6 +8,8 @@ export interface Point {
   y: number;
 }
 
+export type MouseButton = 'left' | 'right';
+
 export const IPC_CHANNELS = {
   isAvailable: 'robot:isAvailable',
   getScreenSize: 'robot:getScreenSize',
@@ -20,7 +22,7 @@ export interface RobotApi {
   isAvailable(): Promise<boolean>;
   getScreenSize(): Promise<ScreenSize>;
   moveMouse(x: number, y: number): Promise<void>;
-  clickMouse(): Promise<void>;
+  clickMouse(button?: MouseButton): Promise<void>;
   pressKey(key: string): Promise<void>;
 }
 

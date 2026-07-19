@@ -8,6 +8,7 @@ import {
   OVERLAY_CHANNELS,
   SYSTEM_CHANNELS,
   WINDOW_CHANNELS,
+  type MouseButton,
   type OverlayDot,
   type Point,
 } from '../shared/ipc';
@@ -121,7 +122,7 @@ function registerRobotHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.isAvailable, () => robotClient.available);
   ipcMain.handle(IPC_CHANNELS.getScreenSize, () => robotClient.getScreenSize());
   ipcMain.handle(IPC_CHANNELS.moveMouse, (_event, x: number, y: number) => robotClient.moveMouse(x, y));
-  ipcMain.handle(IPC_CHANNELS.clickMouse, () => robotClient.clickMouse());
+  ipcMain.handle(IPC_CHANNELS.clickMouse, (_event, button?: MouseButton) => robotClient.clickMouse(button));
   ipcMain.handle(IPC_CHANNELS.pressKey, (_event, key: string) => robotClient.pressKey(key));
 }
 

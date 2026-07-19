@@ -1,11 +1,11 @@
 import type * as NutJS from '@nut-tree-fork/nut-js';
-import type { Point, ScreenSize } from '../shared/ipc';
+import type { MouseButton, Point, ScreenSize } from '../shared/ipc';
 
 export interface RobotClient {
   readonly available: boolean;
   moveMouse(x: number, y: number): Promise<void>;
   getMousePos(): Promise<Point>;
-  clickMouse(): Promise<void>;
+  clickMouse(button?: MouseButton): Promise<void>;
   getScreenSize(): Promise<ScreenSize>;
   pressKey(key: string): Promise<void>;
 }
@@ -51,9 +51,9 @@ export const robotClient: RobotClient = {
   async getMousePos() {
     return requireNut().mouse.getPosition();
   },
-  async clickMouse() {
+  async clickMouse(button = 'left') {
     const nutjs = requireNut();
-    await nutjs.mouse.click(nutjs.Button.LEFT);
+    await nutjs.mouse.click(button === 'right' ? nutjs.Button.RIGHT : nutjs.Button.LEFT);
   },
   async getScreenSize() {
     const nutjs = requireNut();

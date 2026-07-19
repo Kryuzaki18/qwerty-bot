@@ -18,7 +18,7 @@ const robotApi: RobotApi = {
   isAvailable: () => ipcRenderer.invoke(IPC_CHANNELS.isAvailable),
   getScreenSize: () => ipcRenderer.invoke(IPC_CHANNELS.getScreenSize),
   moveMouse: (x, y) => ipcRenderer.invoke(IPC_CHANNELS.moveMouse, x, y),
-  clickMouse: () => ipcRenderer.invoke(IPC_CHANNELS.clickMouse),
+  clickMouse: (button) => ipcRenderer.invoke(IPC_CHANNELS.clickMouse, button),
   pressKey: (key) => ipcRenderer.invoke(IPC_CHANNELS.pressKey, key),
 };
 

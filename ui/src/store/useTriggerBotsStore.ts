@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Point } from '../../../src/shared/ipc';
+import type { MouseButton, Point } from '../../../src/shared/ipc';
 import { TRIGGER_BOTS_STORAGE_KEY } from '../constants/storage.constant';
 import {
   renameBot as renameBotInList,
@@ -11,6 +11,7 @@ export interface TriggerPosition extends Point {
   delayMs: number;
   key: string;
   keyDelayMs: number;
+  mouseButton: MouseButton;
 }
 
 export interface TriggerBot {
@@ -32,6 +33,11 @@ interface TriggerBotsState {
     botId: string,
     positionIndex: number,
     keyDelayMs: number,
+  ) => void;
+  updatePositionMouseButton: (
+    botId: string,
+    positionIndex: number,
+    mouseButton: MouseButton,
   ) => void;
 }
 
@@ -76,6 +82,16 @@ export const useTriggerBotsStore = create<TriggerBotsState>()(
             positionIndex,
             'keyDelayMs',
             keyDelayMs,
+          ),
+        })),
+      updatePositionMouseButton: (botId, positionIndex, mouseButton) =>
+        set((state) => ({
+          triggerBots: updatePositionField(
+            state.triggerBots,
+            botId,
+            positionIndex,
+            'mouseButton',
+            mouseButton,
           ),
         })),
     }),

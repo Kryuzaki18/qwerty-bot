@@ -68,6 +68,7 @@ function TriggerBots({
     updatePositionDelay,
     updatePositionKey,
     updatePositionKeyDelay,
+    updatePositionMouseButton,
   } = useTriggerBotsStore();
   const {
     isCapturing,
@@ -405,6 +406,43 @@ function TriggerBots({
                               <DelayOptions />
                             </select>
                           </label>
+                          <div className="flex flex-col gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+                            Click type
+                            <div className="inline-flex overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updatePositionMouseButton(bot.id, index, "left")
+                                }
+                                disabled={isRunning}
+                                aria-pressed={
+                                  (position.mouseButton ?? "left") === "left"
+                                }
+                                className={`px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 ${
+                                  (position.mouseButton ?? "left") === "left"
+                                    ? "bg-emerald-600 text-white"
+                                    : "bg-white text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                                }`}
+                              >
+                                Left Click
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updatePositionMouseButton(bot.id, index, "right")
+                                }
+                                disabled={isRunning}
+                                aria-pressed={position.mouseButton === "right"}
+                                className={`border-l border-neutral-200 px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 ${
+                                  position.mouseButton === "right"
+                                    ? "bg-emerald-600 text-white"
+                                    : "bg-white text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                                }`}
+                              >
+                                Right Click
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </li>
                     ))}
