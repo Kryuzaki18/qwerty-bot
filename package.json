@@ -14,8 +14,8 @@
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
-    "dist:win": "npm run build && electron-builder --win",
-    "dist:dir": "npm run build && electron-builder --win --dir"
+    "build:win": "npm run build && electron-builder --win",
+    "build:dir": "npm run build && electron-builder --win --dir"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
