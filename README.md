@@ -1,6 +1,23 @@
+<div align="center">
+
+<img src="ui/public/qwerty-logo.png" alt="qwerty-bot logo" width="96" height="96" />
+
 # qwerty-bot
 
-An Electron + React desktop app for automating repetitive mouse/keyboard sequences on Windows. Capture a series of screen coordinates, tune the click, key, and delay behavior for each one, and replay the whole sequence — or many named sequences — on demand.
+**An Electron + React desktop app for automating repetitive mouse/keyboard sequences on Windows.**
+
+[![Electron](https://img.shields.io/badge/Electron-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Zustand](https://img.shields.io/badge/Zustand-593D88?style=for-the-badge&logo=react&logoColor=white)](https://github.com/pmndrs/zustand)
+[![nut.js](https://img.shields.io/badge/nut--tree--fork%2Fnut--js-FF6F00?style=for-the-badge&logo=windowsterminal&logoColor=white)](https://github.com/nut-tree/nut.js)
+[![electron-builder](https://img.shields.io/badge/electron--builder-4A4A55?style=for-the-badge&logo=electron&logoColor=white)](https://www.electron.build/)
+
+</div>
+
+Capture a series of screen coordinates, tune the click, key, and delay behavior for each one, and replay the whole sequence — or many named sequences — on demand.
 
 ## Features
 
