@@ -1,35 +1,91 @@
 # qwerty-bot
 
-An Electron + React desktop app for recording mouse positions and replaying them as click "trigger bots" — capture a sequence of screen coordinates, attach a delay to each, then replay the clicks on demand.
+An Electron + React desktop app for automating repetitive mouse/keyboard sequences on Windows. Capture a series of screen coordinates, tune the click, key, and delay behavior for each one, and replay the whole sequence — or many named sequences — on demand.
+
+## Features
+
+- **Trigger bots** — group captured screen positions into named, reusable sequences (up to 20 per app). Each bot can be run, duplicated, or deleted independently.
+- **Position capture** — press `Space` while capturing to record the current cursor position, `Escape` to stop. Positions can also be appended to an existing bot later.
+- **Grid generation** — auto-generate an evenly spaced grid of positions (5/10/15/20 points) across the screen instead of capturing manually, useful for bulk click patterns.
+- **Per-position configuration** — each captured point has its own:
+  - Replay delay (100ms–10s)
+  - Mouse button (left or right click)
+  - Optional key press after the click, with its own follow-up delay
+- **Live overlay** — toggle a bot's positions on/off (as a whole or one at a time) to visualize them as on-screen dots before triggering, including drag-to-reposition support.
+- **Import / export** — save trigger bots to a JSON file and reload them later or on another machine, with automatic name de-duplication and a slot limit guard on import.
+- **Trigger defaults** — set default delay, key, and key delay applied to newly captured positions from the Settings page.
+- **Dashboard** — shows whether OS automation is available, screen resolution, and live system stats (CPU, RAM, GPU, OS, hostname, uptime).
+- **Graceful degradation** — on platforms where the native automation binding fails to load, automation features are disabled and the UI shows a warning instead of crashing.
 
 ## How it works
 
-- **Dashboard** — shows whether OS automation is available, the screen size, and the current mouse position. Lets you jump the mouse to a fixed point or type text into the focused window.
-- **Triggers** — capture a set of mouse positions (press `Space` to record the current cursor position, `Escape` to stop), name the set, and save it as a trigger bot. Each saved position can have its own replay delay. Triggering a bot moves the mouse to each position, clicks, and waits before moving to the next.
+Mouse and keyboard control is powered by [`@nut-tree-fork/nut-js`](https://github.com/nut-tree/nut.js) running in the Electron main process. The renderer never touches OS APIs directly — it communicates over IPC through a context-bridge preload script (see [src/shared/ipc.ts](src/shared/ipc.ts)).
 
-Mouse/keyboard control is powered by [`@nut-tree-fork/nut-js`](https://github.com/nut-tree/nut.js) in the Electron main process; the renderer talks to it over IPC (see [src/shared/ipc.ts](src/shared/ipc.ts)). On platforms where the native binding fails to load, automation features are disabled and the UI shows a warning instead of crashing.
+When a trigger bot runs, the app minimizes itself, then for each saved position: moves the mouse, waits briefly for it to settle, clicks with the configured button, waits the configured delay, and optionally presses a key and waits again — before moving to the next position. The window is restored once the sequence finishes.
 
 ## Project structure
 
 ```
 src/
-  main/       Electron main process (window, IPC handlers, robot/nut.js client)
-  preload/    Context-bridge preload script exposing window.robot / window.capture
+  main/       Electron main process (window, IPC handlers, system info, nut.js robot client)
+  preload/    Context-bridge preload script exposing window.robot / window.capture / window.overlay / window.system / window.appWindow
   shared/     Types and IPC channel names shared between main and renderer
 ui/
-  src/        React renderer (pages: Dashboard, Triggers; commons: Header, Sidebar)
+  src/
+    pages/        Dashboard, Triggers, Logs, Settings
+    overlay/       Transparent always-on-top overlay window (renders position dots)
+    commons/       Header, Sidebar
+    store/         Zustand stores (trigger bots, trigger settings, theme)
+    services/      Overlay + trigger bot state helpers
+    utils/         Grid position generation, import/export parsing, async helpers
 ```
 
-## Development
+## Getting started
 
-```
+### Prerequisites
+
+- Node.js 18+
+- Windows (the packaged build targets Windows via NSIS/portable; automation requires admin privileges on some platforms)
+
+### Development
+
+```bash
 npm install
 npm run dev
 ```
 
-## Scripts
+This starts the app with hot reload via `electron-vite`.
 
-- `npm run dev` — start the app in development mode with hot reload
-- `npm run build` — type-check then build for production
-- `npm run preview` — preview the production build
-- `npm run typecheck` — type-check both the main/preload and renderer projects
+### Building
+
+```bash
+npm run build      # type-check, then build main/preload/renderer for production
+npm run preview    # preview the production build
+npm run dist:win    # build and package a Windows installer (NSIS) + portable exe
+npm run dist:dir     # build and package to an unpacked directory (faster, for local testing)
+```
+
+### Scripts
+
+| Script | Description |
+| --- | --- |
+| `npm run dev` | Start the app in development mode with hot reload |
+| `npm run build` | Type-check both projects, then build for production |
+| `npm run preview` | Preview the production build |
+| `npm run typecheck` | Type-check the main/preload project and the renderer project |
+| `npm run typecheck:node` | Type-check only the Electron main/preload project |
+| `npm run typecheck:web` | Type-check only the React renderer project |
+| `npm run dist:win` | Package a distributable Windows installer + portable exe |
+| `npm run dist:dir` | Package to an unpacked output directory |
+
+## Tech stack
+
+- [Electron](https://www.electronjs.org/) + [electron-vite](https://electron-vite.org/) for the desktop shell and build tooling
+- [React 19](https://react.dev/) + [Tailwind CSS 4](https://tailwindcss.com/) for the renderer UI
+- [Zustand](https://github.com/pmndrs/zustand) for state management
+- [`@nut-tree-fork/nut-js`](https://github.com/nut-tree/nut.js) for native mouse/keyboard automation
+- [electron-builder](https://www.electron.build/) for packaging
+
+## Disclaimer
+
+This tool automates mouse and keyboard input. Use it only in contexts where automated input is permitted (e.g. it may violate the terms of service of some applications or games). You are responsible for how you use it.
