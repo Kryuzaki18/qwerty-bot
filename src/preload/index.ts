@@ -52,6 +52,7 @@ const overlayApi: OverlayApi = {
   },
   notifyReady: () => ipcRenderer.send(OVERLAY_CHANNELS.ready),
   setInteractive: (interactive) => ipcRenderer.send(OVERLAY_CHANNELS.setInteractive, interactive),
+  setDragLocked: (locked) => ipcRenderer.send(OVERLAY_CHANNELS.setDragLocked, locked),
   reportDrag: (botId, index, point) => ipcRenderer.send(OVERLAY_CHANNELS.positionDragged, botId, index, point),
   onPositionUpdated: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, botId: string, index: number, point: Point): void =>

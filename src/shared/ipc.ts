@@ -72,6 +72,7 @@ export const OVERLAY_CHANNELS = {
   dotsUpdated: 'overlay:dotsUpdated',
   ready: 'overlay:ready',
   setInteractive: 'overlay:setInteractive',
+  setDragLocked: 'overlay:setDragLocked',
   positionDragged: 'overlay:positionDragged',
   positionUpdated: 'overlay:positionUpdated',
 } as const;
@@ -82,6 +83,7 @@ export interface OverlayApi {
   onDotsUpdated(callback: (dots: OverlayDot[]) => void): () => void;
   notifyReady(): void;
   setInteractive(interactive: boolean): void;
+  setDragLocked(locked: boolean): void;
   reportDrag(botId: string, index: number, point: Point): void;
   onPositionUpdated(
     callback: (botId: string, index: number, point: Point) => void,

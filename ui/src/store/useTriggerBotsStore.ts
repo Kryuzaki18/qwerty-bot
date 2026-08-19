@@ -4,6 +4,8 @@ import type { MouseButton, Point } from '../../../src/shared/ipc';
 import { TRIGGER_BOTS_STORAGE_KEY } from '../constants/storage.constant';
 import {
   renameBot as renameBotInList,
+  reorderBots as reorderBotsInList,
+  reorderPositions as reorderPositionsInList,
   updatePositionField,
 } from '../services/triggerBot.service';
 
@@ -27,6 +29,8 @@ interface TriggerBotsState {
     updater: TriggerBot[] | ((prev: TriggerBot[]) => TriggerBot[]),
   ) => void;
   renameBot: (botId: string, name: string) => void;
+  reorderBots: (fromIndex: number, toIndex: number) => void;
+  reorderPositions: (botId: string, fromIndex: number, toIndex: number) => void;
   updatePositionDelay: (botId: string, positionIndex: number, delayMs: number) => void;
   updatePositionKey: (botId: string, positionIndex: number, key: string) => void;
   updatePositionKeyDelay: (
@@ -53,6 +57,19 @@ export const useTriggerBotsStore = create<TriggerBotsState>()(
       renameBot: (botId, name) =>
         set((state) => ({
           triggerBots: renameBotInList(state.triggerBots, botId, name),
+        })),
+      reorderBots: (fromIndex, toIndex) =>
+        set((state) => ({
+          triggerBots: reorderBotsInList(state.triggerBots, fromIndex, toIndex),
+        })),
+      reorderPositions: (botId, fromIndex, toIndex) =>
+        set((state) => ({
+          triggerBots: reorderPositionsInList(
+            state.triggerBots,
+            botId,
+            fromIndex,
+            toIndex,
+          ),
         })),
       updatePositionDelay: (botId, positionIndex, delayMs) =>
         set((state) => ({

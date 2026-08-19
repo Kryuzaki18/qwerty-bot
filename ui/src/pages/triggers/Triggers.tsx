@@ -14,6 +14,7 @@ import TriggerBots from "./components/TriggerBots";
 import TriggerSetPositions from "./components/TriggerSetPositions";
 import {
   clearOverlay,
+  reorderHiddenIndices,
   setOverlayDots,
   shiftHiddenIndicesAfterDelete,
   toOverlayDots,
@@ -31,6 +32,8 @@ import {
 import {
   appendPositions,
   deletePosition,
+  moveItem,
+  reorderPositions,
   updatePositionPoint,
 } from "../../services/triggerBot.service";
 
@@ -222,6 +225,27 @@ function Locations(): React.JSX.Element {
     }
   };
 
+  const handleReorderPositions = (
+    botId: string,
+    fromIndex: number,
+    toIndex: number,
+  ): void => {
+    setTriggerBots((prev) => reorderPositions(prev, botId, fromIndex, toIndex));
+    const bot = triggerBots.find((b) => b.id === botId);
+    if (!bot) return;
+    const nextHidden = reorderHiddenIndices(
+      hiddenPositionIndices[botId] ?? new Set(),
+      bot.positions.length,
+      fromIndex,
+      toIndex,
+    );
+    setHiddenPositionIndices((prev) => ({ ...prev, [botId]: nextHidden }));
+    if (visibleBotId === botId) {
+      const nextPositions = moveItem(bot.positions, fromIndex, toIndex);
+      applyOverlayForBot(botId, nextPositions, nextHidden);
+    }
+  };
+
   const handleDelete = (botId: string): void => {
     setTriggerBots((prev) => prev.filter((bot) => bot.id !== botId));
     clearHiddenPositions(botId);
@@ -401,6 +425,7 @@ function Locations(): React.JSX.Element {
         onDelete={handleDelete}
         onTrigger={(bot) => void handleTrigger(bot)}
         onDeletePosition={handleDeletePosition}
+        onReorderPositions={handleReorderPositions}
         onExport={handleExportTriggerBots}
         onImport={handleImportTriggerBots}
       />
