@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { robotClient } from './robotClient';
 import { getSystemInfo } from './systemInfo';
@@ -107,18 +107,6 @@ async function ensureOverlayWindow(): Promise<BrowserWindow> {
   return win;
 }
 
-function isCursorOverMainWindow(): boolean {
-  if (!mainWindow || mainWindow.isDestroyed() || !mainWindow.isVisible()) return false;
-  const cursor = screen.getCursorScreenPoint();
-  const bounds = mainWindow.getBounds();
-  return (
-    cursor.x >= bounds.x &&
-    cursor.x < bounds.x + bounds.width &&
-    cursor.y >= bounds.y &&
-    cursor.y < bounds.y + bounds.height
-  );
-}
-
 function broadcastDots(): void {
   if (!overlayWindow || overlayWindow.isDestroyed()) return;
   const allDots: OverlayDot[] = [];
@@ -178,11 +166,6 @@ function registerOverlayHandlers(): void {
   });
 
   ipcMain.on(OVERLAY_CHANNELS.setInteractive, (_event, interactive: boolean) => {
-    // A dot hovering over the app's own window must never grab the mouse —
-    // the app underneath always wins there (e.g. dragging to reorder a
-    // trigger bot / position), even if a recorded dot happens to sit on
-    // top of it.
-    if (interactive && isCursorOverMainWindow()) return;
     overlayWindow?.setIgnoreMouseEvents(!interactive, { forward: true });
   });
 
