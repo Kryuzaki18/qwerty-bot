@@ -64,8 +64,8 @@ function Overlay(): React.JSX.Element {
           dragPreview && dragPreview.botId === dot.botId && dragPreview.index === dot.index ? dragPreview : null;
         return (
           <span
-            key={`${dot.botId}-${dot.index}`}
-            className="overlay-dot"
+            key={`${dot.botId}-${dot.positionId}`}
+            className={`overlay-dot${preview ? " overlay-dot-dragging" : ""}`}
             style={{ left: preview?.x ?? dot.x, top: preview?.y ?? dot.y }}
             onMouseEnter={handleDotEnter}
             onMouseLeave={handleDotLeave}

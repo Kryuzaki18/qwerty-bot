@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Eye, EyeOff, GripVertical, MapPin, Trash2 } from "lucide-react";
 import { KEY_OPTIONS } from "../../../constants/trigger.constant";
 import {
@@ -6,10 +7,15 @@ import {
   ICON_BUTTON_DISABLED,
   ICON_BUTTON_NEUTRAL,
 } from "../../../constants/button.constant";
-import { useTriggerBotsStore, type TriggerBot } from "../../../store/useTriggerBotsStore";
+import {
+  useTriggerBotsStore,
+  type TriggerBot,
+  type TriggerPosition,
+} from "../../../store/useTriggerBotsStore";
 import { useDragReorder } from "../../../hooks/useDragReorder";
 import { useFlipAnimation } from "../../../hooks/useFlipAnimation";
 import { getObjectId } from "../../../utils/objectId.util";
+import { moveItem } from "../../../services/triggerBot.service";
 import DragPreview from "../../../commons/DragPreview";
 import DelayOptions from "./DelayOptions";
 
@@ -21,6 +27,7 @@ interface TriggerBotPositionsProps {
   onTogglePositionVisibility: (botId: string, positionIndex: number) => void;
   onDeletePosition: (botId: string, positionIndex: number) => void;
   onReorderPositions: (botId: string, fromIndex: number, toIndex: number) => void;
+  onPreviewReorderPositions: (botId: string, positions: TriggerPosition[]) => void;
 }
 
 function TriggerBotPositions({
@@ -31,6 +38,7 @@ function TriggerBotPositions({
   onTogglePositionVisibility,
   onDeletePosition,
   onReorderPositions,
+  onPreviewReorderPositions,
 }: TriggerBotPositionsProps): React.JSX.Element {
   const {
     updatePositionDelay,
@@ -39,11 +47,19 @@ function TriggerBotPositions({
     updatePositionMouseButton,
   } = useTriggerBotsStore();
 
-  const { draggedIndex, dragOverIndex, pointerPosition, getHandleProps, getDropTargetProps } =
+  const { draggedIndex, dragOverIndex, pointerPosition, getHandleProps, getItemProps } =
     useDragReorder(
       (fromIndex, toIndex) => onReorderPositions(bot.id, fromIndex, toIndex),
       isRunning,
     );
+
+  // Live-update the on-screen overlay dots as the drag hovers over new
+  // slots, so they visibly follow along instead of only jumping once on drop.
+  useEffect(() => {
+    if (draggedIndex === null || dragOverIndex === null) return;
+    onPreviewReorderPositions(bot.id, moveItem(bot.positions, draggedIndex, dragOverIndex));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draggedIndex, dragOverIndex]);
 
   const getPositionFlipRef = useFlipAnimation(bot.positions.map(getObjectId));
 
@@ -54,7 +70,7 @@ function TriggerBotPositions({
           <li
             key={getObjectId(position)}
             ref={getPositionFlipRef(getObjectId(position))}
-            {...getDropTargetProps(index)}
+            {...getItemProps(index)}
             className={`flex flex-col gap-2 rounded-md bg-neutral-100 p-2 dark:bg-neutral-900 transition-opacity ${
               draggedIndex === index ? "opacity-40" : ""
             } ${
@@ -68,7 +84,7 @@ function TriggerBotPositions({
                 <span
                   {...getHandleProps(index)}
                   aria-label={`Reorder position ${index + 1} of ${bot.name}`}
-                  className={`inline-flex cursor-grab items-center justify-center text-neutral-400 hover:text-neutral-600 active:cursor-grabbing dark:text-neutral-500 dark:hover:text-neutral-300 ${
+                  className={`inline-flex cursor-grab touch-none select-none items-center justify-center text-neutral-400 hover:text-neutral-600 active:cursor-grabbing dark:text-neutral-500 dark:hover:text-neutral-300 ${
                     isRunning ? "pointer-events-none opacity-40" : ""
                   }`}
                 >

@@ -1,25 +1,29 @@
-import type { Point } from "../../../src/shared/ipc";
+import type { OverlayPositionEntry, Point } from "../../../src/shared/ipc";
+import type { TriggerPosition } from "../store/useTriggerBotsStore";
+import { getObjectId } from "../utils/objectId.util";
 import { moveItem } from "./triggerBot.service";
 
-export function setOverlayDots(id: string, points: (Point | null)[] | null): void {
-  void window.overlay.setBotDots(id, points);
+export function setOverlayDots(id: string, entries: OverlayPositionEntry[] | null): void {
+  void window.overlay.setBotDots(id, entries);
 }
 
 export function clearOverlay(id: string): void {
   void window.overlay.setBotDots(id, null);
 }
 
-export function setOverlayDragLock(locked: boolean): void {
-  window.overlay.setDragLocked(locked);
+export function toOverlayDots(
+  positions: TriggerPosition[],
+  hiddenIndices: Set<number>,
+): OverlayPositionEntry[] {
+  return positions.map((position, index) => ({
+    id: getObjectId(position),
+    point: hiddenIndices.has(index) ? null : { x: position.x, y: position.y },
+  }));
 }
 
-export function toOverlayDots(
-  positions: Point[],
-  hiddenIndices: Set<number>,
-): (Point | null)[] {
-  return positions.map((position, index) =>
-    hiddenIndices.has(index) ? null : { x: position.x, y: position.y },
-  );
+/** Same as `toOverlayDots`, for plain (not-yet-saved) captured points. */
+export function toCaptureOverlayDots(points: Point[]): OverlayPositionEntry[] {
+  return points.map((point) => ({ id: getObjectId(point), point }));
 }
 
 export function shiftHiddenIndicesAfterDelete(

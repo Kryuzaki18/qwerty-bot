@@ -10,13 +10,13 @@ import {
   WINDOW_CHANNELS,
   type MouseButton,
   type OverlayDot,
+  type OverlayPositionEntry,
   type Point,
 } from '../shared/ipc';
 
 let overlayWindow: BrowserWindow | null = null;
 let mainWindow: BrowserWindow | null = null;
-let overlayDragLocked = false;
-const botDots = new Map<string, (Point | null)[]>();
+const botDots = new Map<string, OverlayPositionEntry[]>();
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -122,10 +122,10 @@ function isCursorOverMainWindow(): boolean {
 function broadcastDots(): void {
   if (!overlayWindow || overlayWindow.isDestroyed()) return;
   const allDots: OverlayDot[] = [];
-  for (const [botId, points] of botDots) {
-    points.forEach((point, index) => {
-      if (!point) return;
-      allDots.push({ botId, index, x: point.x, y: point.y });
+  for (const [botId, entries] of botDots) {
+    entries.forEach((entry, index) => {
+      if (!entry.point) return;
+      allDots.push({ botId, positionId: entry.id, index, x: entry.point.x, y: entry.point.y });
     });
   }
   overlayWindow.webContents.send(OVERLAY_CHANNELS.dotsUpdated, allDots);
@@ -158,16 +158,19 @@ function registerWindowHandlers(): void {
 }
 
 function registerOverlayHandlers(): void {
-  ipcMain.handle(OVERLAY_CHANNELS.setBotDots, async (_event, botId: string, points: (Point | null)[] | null) => {
-    const hasVisiblePoints = points?.some((point) => point !== null) ?? false;
-    if (hasVisiblePoints && points) {
-      botDots.set(botId, points);
-      await ensureOverlayWindow();
-    } else {
-      botDots.delete(botId);
-    }
-    broadcastDots();
-  });
+  ipcMain.handle(
+    OVERLAY_CHANNELS.setBotDots,
+    async (_event, botId: string, entries: OverlayPositionEntry[] | null) => {
+      const hasVisibleEntries = entries?.some((entry) => entry.point !== null) ?? false;
+      if (hasVisibleEntries && entries) {
+        botDots.set(botId, entries);
+        await ensureOverlayWindow();
+      } else {
+        botDots.delete(botId);
+      }
+      broadcastDots();
+    },
+  );
 
   ipcMain.handle(OVERLAY_CHANNELS.clearAll, () => {
     botDots.clear();
@@ -175,7 +178,6 @@ function registerOverlayHandlers(): void {
   });
 
   ipcMain.on(OVERLAY_CHANNELS.setInteractive, (_event, interactive: boolean) => {
-    if (overlayDragLocked) return;
     // A dot hovering over the app's own window must never grab the mouse —
     // the app underneath always wins there (e.g. dragging to reorder a
     // trigger bot / position), even if a recorded dot happens to sit on
@@ -184,24 +186,10 @@ function registerOverlayHandlers(): void {
     overlayWindow?.setIgnoreMouseEvents(!interactive, { forward: true });
   });
 
-  ipcMain.on(OVERLAY_CHANNELS.setDragLocked, (_event, locked: boolean) => {
-    overlayDragLocked = locked;
-    if (locked) {
-      if (overlayWindow && !overlayWindow.isDestroyed()) {
-        overlayWindow.destroy();
-      }
-      overlayWindow = null;
-    } else if (botDots.size > 0) {
-      ensureOverlayWindow()
-        .then(() => broadcastDots())
-        .catch((error: unknown) => console.error('Failed to restore overlay window:', error));
-    }
-  });
-
   ipcMain.on(OVERLAY_CHANNELS.positionDragged, (_event, botId: string, index: number, point: Point) => {
-    const points = botDots.get(botId);
-    if (!points || !points[index]) return;
-    points[index] = point;
+    const entries = botDots.get(botId);
+    if (!entries || index < 0 || index >= entries.length) return;
+    entries[index] = { ...entries[index], point };
     broadcastDots();
     mainWindow?.webContents.send(OVERLAY_CHANNELS.positionUpdated, botId, index, point);
   });

@@ -26,6 +26,7 @@ import {
 import {
   useTriggerBotsStore,
   type TriggerBot,
+  type TriggerPosition,
 } from "../../../store/useTriggerBotsStore";
 import type { CaptureState } from "../../../types/capture";
 import { useDragReorder } from "../../../hooks/useDragReorder";
@@ -49,6 +50,7 @@ interface TriggerBotsProps {
   onTrigger: (bot: TriggerBot) => void;
   onDeletePosition: (botId: string, positionIndex: number) => void;
   onReorderPositions: (botId: string, fromIndex: number, toIndex: number) => void;
+  onPreviewReorderPositions: (botId: string, positions: TriggerPosition[]) => void;
   onExport: () => void;
   onImport: (jsonText: string) => void;
 }
@@ -69,6 +71,7 @@ function TriggerBots({
   onTrigger,
   onDeletePosition,
   onReorderPositions,
+  onPreviewReorderPositions,
   onExport,
   onImport,
 }: TriggerBotsProps): React.JSX.Element {
@@ -93,7 +96,7 @@ function TriggerBots({
     dragOverIndex: dragOverBotIndex,
     pointerPosition: botPointerPosition,
     getHandleProps: getBotHandleProps,
-    getDropTargetProps: getBotDropTargetProps,
+    getItemProps: getBotItemProps,
   } = useDragReorder((fromIndex, toIndex) => reorderBots(fromIndex, toIndex), isActionDisabled);
 
   const getBotFlipRef = useFlipAnimation(triggerBots.map((bot) => bot.id));
@@ -188,7 +191,7 @@ function TriggerBots({
               <li
                 key={bot.id}
                 ref={getBotFlipRef(bot.id)}
-                {...getBotDropTargetProps(botIndex)}
+                {...getBotItemProps(botIndex)}
                 className={`rounded-lg border border-neutral-200 p-4 dark:border-neutral-800 bg-white dark:bg-transparent transition-opacity ${
                   draggedBotIndex === botIndex ? "opacity-40" : ""
                 } ${
@@ -211,7 +214,7 @@ function TriggerBots({
                   <span
                     {...getBotHandleProps(botIndex)}
                     aria-label={`Reorder ${bot.name}`}
-                    className={`inline-flex shrink-0 cursor-grab items-center justify-center text-neutral-400 hover:text-neutral-600 active:cursor-grabbing dark:text-neutral-500 dark:hover:text-neutral-300 ${
+                    className={`inline-flex shrink-0 cursor-grab touch-none select-none items-center justify-center text-neutral-400 hover:text-neutral-600 active:cursor-grabbing dark:text-neutral-500 dark:hover:text-neutral-300 ${
                       isActionDisabled ? "pointer-events-none opacity-40" : ""
                     }`}
                   >
@@ -364,6 +367,7 @@ function TriggerBots({
                     onTogglePositionVisibility={onTogglePositionVisibility}
                     onDeletePosition={onDeletePosition}
                     onReorderPositions={onReorderPositions}
+                    onPreviewReorderPositions={onPreviewReorderPositions}
                   />
                 )}
 

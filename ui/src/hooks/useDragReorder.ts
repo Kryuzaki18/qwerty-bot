@@ -1,12 +1,4 @@
-import { useCallback, useRef, useState } from "react";
-import { setOverlayDragLock } from "../services/overlayService";
-
-const EMPTY_DRAG_IMAGE =
-  typeof Image !== "undefined" ? new Image() : undefined;
-if (EMPTY_DRAG_IMAGE) {
-  EMPTY_DRAG_IMAGE.src =
-    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBTAA7";
-}
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface PointerPosition {
   x: number;
@@ -18,20 +10,21 @@ export interface UseDragReorderResult {
   dragOverIndex: number | null;
   pointerPosition: PointerPosition | null;
   getHandleProps: (index: number) => {
-    draggable: boolean;
-    onMouseDown: () => void;
-    onMouseUp: () => void;
-    onDragStart: (event: React.DragEvent) => void;
-    onDrag: (event: React.DragEvent) => void;
-    onDragEnd: () => void;
+    onPointerDown: (event: React.PointerEvent) => void;
   };
-  getDropTargetProps: (index: number) => {
-    onDragOver: (event: React.DragEvent) => void;
-    onDrop: (event: React.DragEvent) => void;
-    onDragLeave: () => void;
+  getItemProps: (index: number) => {
+    "data-reorder-index": number;
   };
 }
 
+/**
+ * Pointer-based (not native HTML5 `draggable`) list reordering. Native drag
+ * on Windows runs an OS-level OLE drag session that gets disrupted by the
+ * app's always-on-top overlay window merely existing — tracking the pointer
+ * ourselves avoids that entirely, and lets callers (e.g. to live-update the
+ * on-screen overlay dots) see the in-progress hover target on every move,
+ * not just on drop.
+ */
 export function useDragReorder(
   onReorder: (fromIndex: number, toIndex: number) => void,
   disabled = false,
@@ -41,71 +34,70 @@ export function useDragReorder(
   const [pointerPosition, setPointerPosition] =
     useState<PointerPosition | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
+  const dragOverIndexRef = useRef<number | null>(null);
 
   const reset = useCallback(() => {
     draggedIndexRef.current = null;
+    dragOverIndexRef.current = null;
     setDraggedIndex(null);
     setDragOverIndex(null);
     setPointerPosition(null);
-    setOverlayDragLock(false);
   }, []);
+
+  useEffect(() => {
+    if (draggedIndex === null) return;
+
+    const handlePointerMove = (event: PointerEvent): void => {
+      setPointerPosition({ x: event.clientX, y: event.clientY });
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const itemEl = target?.closest<HTMLElement>("[data-reorder-index]");
+      const indexAttr = itemEl?.dataset.reorderIndex;
+      if (indexAttr === undefined) return;
+      const index = Number(indexAttr);
+      if (index !== dragOverIndexRef.current) {
+        dragOverIndexRef.current = index;
+        setDragOverIndex(index);
+      }
+    };
+
+    const handlePointerUp = (): void => {
+      const fromIndex = draggedIndexRef.current;
+      const toIndex = dragOverIndexRef.current;
+      reset();
+      if (fromIndex === null || toIndex === null || fromIndex === toIndex) return;
+      onReorder(fromIndex, toIndex);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, [draggedIndex, onReorder, reset]);
 
   const getHandleProps = useCallback(
     (index: number) => ({
-      draggable: !disabled,
-      // Lock (and hide) the overlay as early as possible — before the
-      // browser even recognizes a drag gesture — so there's no gap where
-      // the always-on-top overlay can still steal/disrupt the mouse right
-      // as a native drag is starting. If this turns out to be a plain
-      // click (no drag follows), onMouseUp below undoes the lock.
-      onMouseDown: () => {
-        if (disabled) return;
-        setOverlayDragLock(true);
-      },
-      onMouseUp: () => {
-        if (draggedIndexRef.current === null) setOverlayDragLock(false);
-      },
-      onDragStart: (event: React.DragEvent) => {
-        if (disabled) return;
+      onPointerDown: (event: React.PointerEvent) => {
+        if (disabled || event.button !== 0) return;
+        event.preventDefault();
         draggedIndexRef.current = index;
+        dragOverIndexRef.current = index;
         setDraggedIndex(index);
-        setPointerPosition({ x: event.clientX, y: event.clientY });
-        event.dataTransfer.effectAllowed = "move";
-        if (EMPTY_DRAG_IMAGE) {
-          event.dataTransfer.setDragImage(EMPTY_DRAG_IMAGE, 0, 0);
-        }
-        setOverlayDragLock(true);
-      },
-      onDrag: (event: React.DragEvent) => {
-        // Chromium fires a trailing drag event with (0, 0) on drop.
-        if (event.clientX === 0 && event.clientY === 0) return;
+        setDragOverIndex(index);
         setPointerPosition({ x: event.clientX, y: event.clientY });
       },
-      onDragEnd: reset,
     }),
-    [disabled, reset],
+    [disabled],
   );
 
-  const getDropTargetProps = useCallback(
+  const getItemProps = useCallback(
     (index: number) => ({
-      onDragOver: (event: React.DragEvent) => {
-        if (draggedIndexRef.current === null) return;
-        event.preventDefault();
-        event.dataTransfer.dropEffect = "move";
-        setDragOverIndex((current) => (current === index ? current : index));
-      },
-      onDrop: (event: React.DragEvent) => {
-        event.preventDefault();
-        const fromIndex = draggedIndexRef.current;
-        reset();
-        if (fromIndex === null || fromIndex === index) return;
-        onReorder(fromIndex, index);
-      },
-      onDragLeave: () => {
-        setDragOverIndex((current) => (current === index ? null : current));
-      },
+      "data-reorder-index": index,
     }),
-    [onReorder, reset],
+    [],
   );
 
   return {
@@ -113,6 +105,6 @@ export function useDragReorder(
     dragOverIndex,
     pointerPosition,
     getHandleProps,
-    getDropTargetProps,
+    getItemProps,
   };
 }

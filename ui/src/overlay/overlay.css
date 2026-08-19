@@ -16,7 +16,12 @@ body {
   background: radial-gradient(circle, rgba(52, 211, 153, 1) 0%, rgba(16, 185, 129, 0.7) 55%, rgba(16, 185, 129, 0) 100%);
   box-shadow: 0 0 14px 4px rgba(16, 185, 129, 0.6);
   animation: overlay-pulse 1.6s ease-in-out infinite;
+  transition: left 180ms ease, top 180ms ease;
   cursor: grab;
+}
+
+.overlay-dot.overlay-dot-dragging {
+  transition: none;
 }
 
 .overlay-dot:active {

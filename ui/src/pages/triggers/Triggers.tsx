@@ -17,6 +17,7 @@ import {
   reorderHiddenIndices,
   setOverlayDots,
   shiftHiddenIndicesAfterDelete,
+  toCaptureOverlayDots,
   toOverlayDots,
 } from "../../services/overlayService";
 import type { CaptureState } from "../../types/capture";
@@ -82,7 +83,7 @@ function Locations(): React.JSX.Element {
   useEffect(() => {
     setOverlayDots(
       CAPTURING_OVERLAY_ID,
-      capturedPositions.length > 0 ? capturedPositions : null,
+      capturedPositions.length > 0 ? toCaptureOverlayDots(capturedPositions) : null,
     );
   }, [capturedPositions]);
 
@@ -244,6 +245,14 @@ function Locations(): React.JSX.Element {
       const nextPositions = moveItem(bot.positions, fromIndex, toIndex);
       applyOverlayForBot(botId, nextPositions, nextHidden);
     }
+  };
+
+  const handlePreviewReorderPositions = (
+    botId: string,
+    positions: TriggerBot["positions"],
+  ): void => {
+    if (visibleBotId !== botId) return;
+    applyOverlayForBot(botId, positions, hiddenPositionIndices[botId] ?? new Set());
   };
 
   const handleDelete = (botId: string): void => {
@@ -426,6 +435,7 @@ function Locations(): React.JSX.Element {
         onTrigger={(bot) => void handleTrigger(bot)}
         onDeletePosition={handleDeletePosition}
         onReorderPositions={handleReorderPositions}
+        onPreviewReorderPositions={handlePreviewReorderPositions}
         onExport={handleExportTriggerBots}
         onImport={handleImportTriggerBots}
       />
