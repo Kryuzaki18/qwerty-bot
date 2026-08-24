@@ -4,6 +4,7 @@ import {
   CAPTURING_OVERLAY_ID,
   MAX_TRIGGER_BOTS,
   MOUSE_CLICK_SETTLE_MS,
+  formatKeyCombo,
 } from "../../constants/trigger.constant";
 import { useTriggerSettingsStore } from "../../store/useTriggerSettingsStore";
 import {
@@ -56,8 +57,9 @@ function Locations(): React.JSX.Element {
     string | null
   >(null);
 
-  const { defaultDelayMs, defaultKey, defaultKeyDelayMs } =
+  const { defaultDelayMs, defaultKey, defaultKeyCombo, defaultKeyDelayMs } =
     useTriggerSettingsStore();
+  const defaultKeyWithCombo = formatKeyCombo(defaultKey, defaultKeyCombo);
 
   useEffect(() => {
     const unsubscribePoint = window.capture.onPointCaptured((point) => {
@@ -162,7 +164,7 @@ function Locations(): React.JSX.Element {
     if (capturedPositions.length === 0) return;
     const newPositions = toTriggerPositions(capturedPositions, {
       delayMs: defaultDelayMs,
-      key: defaultKey,
+      key: defaultKeyWithCombo,
       keyDelayMs: defaultKeyDelayMs,
       mouseButton: "left",
     });
@@ -195,7 +197,7 @@ function Locations(): React.JSX.Element {
       trimmedName,
       toTriggerPositions(capturedPositions, {
         delayMs: defaultDelayMs,
-        key: defaultKey,
+        key: defaultKeyWithCombo,
         keyDelayMs: defaultKeyDelayMs,
         mouseButton: "left",
       }),

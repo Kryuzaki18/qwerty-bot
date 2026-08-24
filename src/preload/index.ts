@@ -64,6 +64,12 @@ const overlayApi: OverlayApi = {
 const appWindowApi: WindowApi = {
   minimize: () => ipcRenderer.invoke(WINDOW_CHANNELS.minimize),
   restore: () => ipcRenderer.invoke(WINDOW_CHANNELS.restore),
+  forceQuit: () => ipcRenderer.invoke(WINDOW_CHANNELS.forceQuit),
+  onRequestForceQuit: (callback) => {
+    const listener = (): void => callback();
+    ipcRenderer.on(WINDOW_CHANNELS.requestForceQuit, listener);
+    return () => ipcRenderer.removeListener(WINDOW_CHANNELS.requestForceQuit, listener);
+  },
 };
 
 contextBridge.exposeInMainWorld('robot', robotApi);

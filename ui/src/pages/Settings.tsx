@@ -1,15 +1,18 @@
 import { RotateCcw } from "lucide-react";
-import { KEY_OPTIONS } from "../constants/trigger.constant";
+import { KEY_SELECT_POPUP_HEIGHT_CLASSNAME } from "../constants/trigger.constant";
 import { useTriggerSettingsStore } from "../store/useTriggerSettingsStore";
 import DelayOptions from "./triggers/components/DelayOptions";
+import KeyOptions from "./triggers/components/KeyOptions";
 
 function Settings(): React.JSX.Element {
   const {
     defaultDelayMs,
     defaultKey,
+    defaultKeyCombo,
     defaultKeyDelayMs,
     setDefaultDelayMs,
     setDefaultKey,
+    setDefaultKeyCombo,
     setDefaultKeyDelayMs,
     resetDefaults,
   } = useTriggerSettingsStore();
@@ -36,7 +39,7 @@ function Settings(): React.JSX.Element {
           </button>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-end gap-4">
+        <div className="mt-4 grid grid-cols-2 items-end gap-4 sm:grid-cols-4">
           <label className="flex flex-col gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
             Default delay
             <select
@@ -53,13 +56,22 @@ function Settings(): React.JSX.Element {
             <select
               value={defaultKey}
               onChange={(event) => setDefaultKey(event.target.value)}
-              className="rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+              className={`rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-emerald-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 ${KEY_SELECT_POPUP_HEIGHT_CLASSNAME}`}
             >
-              {KEY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <KeyOptions />
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+            Combo key
+            <select
+              value={defaultKey === "" ? "" : defaultKeyCombo}
+              onChange={(event) => setDefaultKeyCombo(event.target.value)}
+              disabled={defaultKey === ""}
+              className={`rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 ${KEY_SELECT_POPUP_HEIGHT_CLASSNAME}`}
+            >
+              {defaultKey === "" && <option value="">N/A</option>}
+              <KeyOptions />
             </select>
           </label>
 

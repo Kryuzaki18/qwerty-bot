@@ -1,4 +1,11 @@
-import { APP_COPYRIGHT, APP_LOGO_ALT, APP_LOGO_SRC, APP_NAME, APP_VERSION } from '../constants/app.constant';
+import {
+  APP_COPYRIGHT,
+  APP_CREATED_BY,
+  APP_LOGO_ALT,
+  APP_LOGO_SRC,
+  APP_NAME,
+  APP_VERSION,
+} from '../constants/app.constant';
 import { NAV_ITEM_ACTIVE_CLASS, NAV_ITEM_INACTIVE_CLASS, PAGE_ICONS, PAGES } from '../constants/nav.constant';
 import type { Page } from '../types/nav';
 
@@ -12,7 +19,8 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
     <nav className="flex w-56 flex-col gap-1 border-r border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="mb-4 flex items-center gap-2 px-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
         <img src={APP_LOGO_SRC} alt={APP_LOGO_ALT} className="h-6 w-6 rounded-md" />
-        {APP_NAME}
+        <span>{APP_NAME}</span>
+        <span className="text-[10px] font-normal text-neutral-400 dark:text-neutral-500 mt-2">{APP_VERSION}</span>
       </div>
       {PAGES.map((page) => {
         const Icon = PAGE_ICONS[page];
@@ -32,7 +40,7 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
         );
       })}
       <div className="text-center mt-auto px-2 pt-4 text-[10px] text-neutral-600 dark:text-neutral-400">
-        <p>{APP_VERSION}</p>
+        <p>Created by {APP_CREATED_BY}</p>
         <p>{APP_COPYRIGHT}</p>
       </div>
     </nav>

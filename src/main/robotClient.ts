@@ -58,11 +58,15 @@ export const robotClient: RobotClient = {
   },
   async pressKey(key) {
     const nutjs = requireNut();
-    const keyEnum = (nutjs.Key as unknown as Record<string, number>)[key];
-    if (keyEnum === undefined) {
-      throw new Error(`Unknown key: ${key}`);
-    }
-    await nutjs.keyboard.pressKey(keyEnum);
-    await nutjs.keyboard.releaseKey(keyEnum);
+    const keyEnumMap = nutjs.Key as unknown as Record<string, number>;
+    const keyEnums = key.split('+').map((keyName) => {
+      const keyEnum = keyEnumMap[keyName];
+      if (keyEnum === undefined) {
+        throw new Error(`Unknown key: ${keyName}`);
+      }
+      return keyEnum;
+    });
+    await nutjs.keyboard.pressKey(...keyEnums);
+    await nutjs.keyboard.releaseKey(...keyEnums);
   },
 };

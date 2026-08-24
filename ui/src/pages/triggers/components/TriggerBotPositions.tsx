@@ -1,12 +1,16 @@
 import { useEffect } from "react";
 import { Eye, EyeOff, GripVertical, MapPin, Trash2 } from "lucide-react";
-import { KEY_OPTIONS } from "../../../constants/trigger.constant";
 import {
   ICON_BUTTON,
   ICON_BUTTON_DANGER_HOVER,
   ICON_BUTTON_DISABLED,
   ICON_BUTTON_NEUTRAL,
 } from "../../../constants/button.constant";
+import {
+  KEY_SELECT_POPUP_HEIGHT_CLASSNAME,
+  formatKeyCombo,
+  parseKeyCombo,
+} from "../../../constants/trigger.constant";
 import {
   useTriggerBotsStore,
   type TriggerBot,
@@ -18,6 +22,7 @@ import { getObjectId } from "../../../utils/objectId.util";
 import { moveItem } from "../../../services/triggerBot.service";
 import DragPreview from "../../../commons/DragPreview";
 import DelayOptions from "./DelayOptions";
+import KeyOptions from "./KeyOptions";
 
 interface TriggerBotPositionsProps {
   bot: TriggerBot;
@@ -53,12 +58,9 @@ function TriggerBotPositions({
       isRunning,
     );
 
-  // Live-update the on-screen overlay dots as the drag hovers over new
-  // slots, so they visibly follow along instead of only jumping once on drop.
   useEffect(() => {
     if (draggedIndex === null || dragOverIndex === null) return;
     onPreviewReorderPositions(bot.id, moveItem(bot.positions, draggedIndex, dragOverIndex));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draggedIndex, dragOverIndex]);
 
   const getPositionFlipRef = useFlipAnimation(bot.positions.map(getObjectId));
@@ -66,7 +68,9 @@ function TriggerBotPositions({
   return (
     <>
       <ul className="mt-3 flex flex-col gap-2">
-        {bot.positions.map((position, index) => (
+        {bot.positions.map((position, index) => {
+          const [primaryKey, comboKey] = parseKeyCombo(position.key);
+          return (
           <li
             key={getObjectId(position)}
             ref={getPositionFlipRef(getObjectId(position))}
@@ -154,16 +158,36 @@ function TriggerBotPositions({
               <label className="flex flex-col gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
                 Key
                 <select
-                  value={position.key}
-                  onChange={(event) => updatePositionKey(bot.id, index, event.target.value)}
+                  value={primaryKey}
+                  onChange={(event) =>
+                    updatePositionKey(
+                      bot.id,
+                      index,
+                      formatKeyCombo(event.target.value, comboKey),
+                    )
+                  }
                   disabled={isRunning}
-                  className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+                  className={`rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 ${KEY_SELECT_POPUP_HEIGHT_CLASSNAME}`}
                 >
-                  {KEY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  <KeyOptions />
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+                Combo key
+                <select
+                  value={primaryKey === "" ? "" : comboKey}
+                  onChange={(event) =>
+                    updatePositionKey(
+                      bot.id,
+                      index,
+                      formatKeyCombo(primaryKey, event.target.value),
+                    )
+                  }
+                  disabled={isRunning || primaryKey === ""}
+                  className={`rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 ${KEY_SELECT_POPUP_HEIGHT_CLASSNAME}`}
+                >
+                  {primaryKey === "" && <option value="">N/A</option>}
+                  <KeyOptions />
                 </select>
               </label>
               <label className="flex flex-col gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
@@ -213,7 +237,8 @@ function TriggerBotPositions({
               </div>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
       {draggedIndex !== null && (
         <DragPreview position={pointerPosition}>

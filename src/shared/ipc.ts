@@ -97,9 +97,13 @@ export interface OverlayApi {
 export const WINDOW_CHANNELS = {
   minimize: 'window:minimize',
   restore: 'window:restore',
+  forceQuit: 'window:forceQuit',
+  requestForceQuit: 'window:requestForceQuit',
 } as const;
 
 export interface WindowApi {
   minimize(): Promise<void>;
   restore(): Promise<void>;
+  forceQuit(): Promise<void>;
+  onRequestForceQuit(callback: () => void): () => void;
 }

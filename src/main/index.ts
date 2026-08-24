@@ -1,4 +1,5 @@
-import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, Menu, nativeImage, Tray } from 'electron';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { robotClient } from './robotClient';
 import { getSystemInfo } from './systemInfo';
@@ -16,7 +17,17 @@ import {
 
 let overlayWindow: BrowserWindow | null = null;
 let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
 const botDots = new Map<string, OverlayPositionEntry[]>();
+
+function resolveAppIconPath(): string {
+  const builtPath = join(__dirname, '../renderer/qwerty-logo.png');
+  if (existsSync(builtPath)) return builtPath;
+  return join(__dirname, '../../ui/public/qwerty-logo.png');
+}
+
+const appIconPath = resolveAppIconPath();
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -26,7 +37,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     resizable: false,
     maximizable: false,
-    icon: join(__dirname, '../../ui/public/qwerty-logo.png'),
+    icon: appIconPath,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -36,6 +47,12 @@ function createWindow(): void {
 
   win.once('ready-to-show', () => {
     win.show();
+  });
+
+  win.on('close', (event) => {
+    if (isQuitting) return;
+    event.preventDefault();
+    win.hide();
   });
 
   win.on('closed', () => {
@@ -51,6 +68,32 @@ function createWindow(): void {
   }
 
   mainWindow = win;
+}
+
+function showMainWindow(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+function requestForceQuit(): void {
+  showMainWindow();
+  mainWindow?.webContents.send(WINDOW_CHANNELS.requestForceQuit);
+}
+
+function createTray(): void {
+  const icon = nativeImage.createFromPath(appIconPath).resize({ width: 16, height: 16 });
+  tray = new Tray(icon);
+  tray.setToolTip('qwerty-bot');
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: 'Open qwerty-bot', click: showMainWindow },
+      { type: 'separator' },
+      { label: 'Force Close', click: requestForceQuit },
+    ]),
+  );
+  tray.on('click', showMainWindow);
 }
 
 function waitForOverlayReady(win: BrowserWindow): Promise<void> {
@@ -143,6 +186,11 @@ function registerWindowHandlers(): void {
     mainWindow.restore();
     mainWindow.focus();
   });
+
+  ipcMain.handle(WINDOW_CHANNELS.forceQuit, () => {
+    isQuitting = true;
+    app.quit();
+  });
 }
 
 function registerOverlayHandlers(): void {
@@ -209,10 +257,16 @@ void app.whenReady().then(() => {
   registerOverlayHandlers();
   registerWindowHandlers();
   createWindow();
+  createTray();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    else showMainWindow();
   });
+});
+
+app.on('before-quit', () => {
+  isQuitting = true;
 });
 
 app.on('window-all-closed', () => {
@@ -223,4 +277,6 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
+  tray?.destroy();
+  tray = null;
 });
